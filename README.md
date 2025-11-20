@@ -6,7 +6,7 @@ A beautiful glass morphism markdown editor that transforms your markdown into st
 ![React](https://img.shields.io/badge/React-19.2.0-61dafb)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.4.15-38bdf8)
 
-## ✨ Features
+## Features
 
 - **Glass Morphism Design** - Beautiful frosted glass effect with customizable blur and opacity
 - **Markdown Support** - Full markdown rendering with syntax highlighting
@@ -18,7 +18,7 @@ A beautiful glass morphism markdown editor that transforms your markdown into st
 - **Export to PNG** - Export your beautiful markdown frames as high-quality images
 - **Responsive Design** - Works seamlessly on desktop and mobile devices
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 
@@ -45,7 +45,7 @@ npm start
 
 The app will open at [http://localhost:3000](http://localhost:3000)
 
-## 📖 Usage
+## Usage
 
 1. **Edit Tab**: Write your markdown in the editor on the left sidebar
 2. **Style Tab**: Customize the appearance:
@@ -64,7 +64,7 @@ The app will open at [http://localhost:3000](http://localhost:3000)
   - Inline: `$E = mc^2$`
   - Block: `$$E = mc^2$$`
 
-## 🛠️ Built With
+## Built With
 
 - [React](https://reactjs.org/) - UI library
 - [Tailwind CSS](https://tailwindcss.com/) - Styling
@@ -74,14 +74,14 @@ The app will open at [http://localhost:3000](http://localhost:3000)
 - [dom-to-image](https://github.com/tsayen/dom-to-image) - PNG export
 - [Lucide React](https://lucide.dev/) - Icons
 
-## 📝 Available Scripts
+## Available Scripts
 
 - `npm start` - Runs the app in development mode
 - `npm test` - Launches the test runner
 - `npm run build` - Builds the app for production
 - `npm run eject` - Ejects from Create React App (one-way operation)
 
-## 🎨 Customization
+## Customization
 
 ### Background Options
 
@@ -101,19 +101,19 @@ The app will open at [http://localhost:3000](http://localhost:3000)
 - **Fonts**: Inter (Modern), Playfair Display (Elegant), JetBrains Mono (Code)
 - **Colors**: 9 preset colors plus custom color picker
 
-## 🤝 Contributing
+## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
-## 📄 License
+## License
 
 This project is open source and available under the MIT License.
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 - Inspired by glass morphism design trends
 - Built with Create React App
 
 ---
 
-Made with ❤️ by [RecollectIQ](https://github.com/RecollectIQ)
+Made by [RecollectIQ](https://github.com/RecollectIQ)
