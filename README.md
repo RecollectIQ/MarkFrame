@@ -1,70 +1,119 @@
-# Getting Started with Create React App
+# MarkFrame
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A beautiful glass morphism markdown editor that transforms your markdown into stunning, shareable images with customizable backgrounds, typography, and glass effects.
 
-## Available Scripts
+![MarkFrame](https://img.shields.io/badge/MarkFrame-v0.1.0-blue)
+![React](https://img.shields.io/badge/React-19.2.0-61dafb)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.4.15-38bdf8)
 
-In the project directory, you can run:
+## ✨ Features
 
-### `npm start`
+- **Glass Morphism Design** - Beautiful frosted glass effect with customizable blur and opacity
+- **Markdown Support** - Full markdown rendering with syntax highlighting
+- **Math Rendering** - LaTeX math equations support via KaTeX
+- **Code Highlighting** - Syntax highlighting for code blocks
+- **Customizable Backgrounds** - Choose from preset gradients, create custom gradients, or upload your own images
+- **Typography Options** - Multiple font families (Modern, Elegant, Code)
+- **Color Customization** - Extensive text color presets and custom color picker
+- **Export to PNG** - Export your beautiful markdown frames as high-quality images
+- **Responsive Design** - Works seamlessly on desktop and mobile devices
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+## 🚀 Getting Started
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+### Prerequisites
 
-### `npm test`
+- Node.js (v14 or higher)
+- npm or yarn
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### Installation
 
-### `npm run build`
+1. Clone the repository:
+```bash
+git clone https://github.com/RecollectIQ/MarkFrame.git
+cd MarkFrame
+```
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+2. Install dependencies:
+```bash
+npm install
+```
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+3. Start the development server:
+```bash
+npm start
+```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+The app will open at [http://localhost:3000](http://localhost:3000)
 
-### `npm run eject`
+## 📖 Usage
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+1. **Edit Tab**: Write your markdown in the editor on the left sidebar
+2. **Style Tab**: Customize the appearance:
+   - Choose background (gradients or upload image)
+   - Select font family
+   - Pick text color
+   - Adjust glass properties (blur, opacity, padding, roundness)
+3. **Preview**: See your markdown rendered in real-time with glass morphism effects
+4. **Export**: Click the download button to export as PNG
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+### Markdown Features
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+- **Bold text**: `**bold**`
+- **Code blocks**: Triple backticks with language
+- **Math equations**: 
+  - Inline: `$E = mc^2$`
+  - Block: `$$E = mc^2$$`
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+## 🛠️ Built With
 
-## Learn More
+- [React](https://reactjs.org/) - UI library
+- [Tailwind CSS](https://tailwindcss.com/) - Styling
+- [Marked](https://marked.js.org/) - Markdown parser
+- [KaTeX](https://katex.org/) - Math rendering
+- [Highlight.js](https://highlightjs.org/) - Code syntax highlighting
+- [dom-to-image](https://github.com/tsayen/dom-to-image) - PNG export
+- [Lucide React](https://lucide.dev/) - Icons
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+## 📝 Available Scripts
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+- `npm start` - Runs the app in development mode
+- `npm test` - Launches the test runner
+- `npm run build` - Builds the app for production
+- `npm run eject` - Ejects from Create React App (one-way operation)
 
-### Code Splitting
+## 🎨 Customization
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+### Background Options
 
-### Analyzing the Bundle Size
+- **Preset Gradients**: Choose from 8 beautiful preset gradients
+- **Custom Gradient**: Create your own gradient with color pickers and direction controls
+- **Image Upload**: Upload your own background image with brightness control
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+### Glass Properties
 
-### Making a Progressive Web App
+- **Blur**: Control the backdrop blur effect (0-60px)
+- **Opacity**: Adjust card transparency (0-100%)
+- **Padding**: Set internal spacing (16-128px)
+- **Roundness**: Control border radius (0-48px)
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+### Typography
 
-### Advanced Configuration
+- **Fonts**: Inter (Modern), Playfair Display (Elegant), JetBrains Mono (Code)
+- **Colors**: 9 preset colors plus custom color picker
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+## 🤝 Contributing
 
-### Deployment
+Contributions are welcome! Please feel free to submit a Pull Request.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+## 📄 License
 
-### `npm run build` fails to minify
+This project is open source and available under the MIT License.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+## 🙏 Acknowledgments
+
+- Inspired by glass morphism design trends
+- Built with Create React App
+
+---
+
+Made with ❤️ by [RecollectIQ](https://github.com/RecollectIQ)
