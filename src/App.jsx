@@ -593,7 +593,7 @@ const App = () => {
                     </div>
                     <input
                       type="range" min={control.min} max={control.max} value={control.val}
-                      onChange={(e) => control.set(e.target.value)}
+                      onChange={(e) => control.set(Number(e.target.value))}
                       className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-600 hover:accent-indigo-500"
                     />
                   </div>
@@ -616,25 +616,32 @@ const App = () => {
         {/* Rendered Output Container */}
         <div
           ref={previewRef}
-          className="relative w-full max-w-3xl shadow-2xl transition-all duration-500 ease-out overflow-hidden group"
+          className="relative w-full max-w-3xl shadow-2xl transition-all duration-500 ease-out overflow-hidden group grid place-items-center rounded-[36px] p-6 md:p-12"
           style={{
             ...getBackgroundStyle(),
             backgroundSize: 'cover',
             backgroundPosition: 'center',
-            minHeight: '500px',
-            height: 'auto',
-            aspectRatio: aspectRatio.value
           }}
         >
+          {/* Aspect Ratio Spacer - Enforces minimum aspect ratio but allows expansion */}
+          <div style={{
+            gridArea: '1 / 1',
+            width: '100%',
+            aspectRatio: aspectRatio.value === 'auto' ? 'auto' : aspectRatio.value,
+            pointerEvents: 'none'
+          }} />
+
           {/* The Glass Card */}
           <div
             className={`
-                flex flex-col justify-center
+                relative flex flex-col justify-center
                 transition-all duration-500 ease-out
-                ${font.value}
+                z-10 w-full
               `}
             style={{
-              margin: `${padding}px`,
+              gridArea: '1 / 1',
+              fontFamily: font.name,
+              padding: `${padding}px`,
               backgroundColor: themeMode === 'light'
                 ? `rgba(255, 255, 255, ${opacity / 100})`
                 : `rgba(15, 23, 42, ${opacity / 100})`,
@@ -645,11 +652,19 @@ const App = () => {
               border: themeMode === 'light'
                 ? '1px solid rgba(255,255,255,0.6)'
                 : '1px solid rgba(255,255,255,0.15)',
-              color: textColor
+              color: textColor,
+              width: '100%',
+              height: '100%',
+              minHeight: 0,
+              minWidth: 0,
+              overflow: 'hidden',
+              justifySelf: 'stretch',
+              alignSelf: 'stretch'
             }}
           >
             <div
-              className="w-full h-full overflow-hidden p-8 md:p-12 custom-markdown"
+              className="w-full h-full overflow-auto custom-markdown"
+              style={{ minHeight: 0, minWidth: 0 }}
             >
               <div
                 ref={contentRef}
@@ -660,7 +675,7 @@ const App = () => {
 
             {/* Watermark */}
             <div
-              className="absolute bottom-6 right-8 text-[10px] font-bold opacity-40 tracking-[0.25em] uppercase"
+              className="pointer-events-none absolute bottom-6 right-8 text-[10px] font-bold opacity-40 tracking-[0.25em] uppercase"
               style={{ color: textColor }}
             >
               MarkFrame
