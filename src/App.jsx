@@ -19,13 +19,6 @@ const FONTS = [
   { name: 'Lora', value: 'font-lora', label: 'Serif', url: 'https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,700;1,400&display=swap' },
 ];
 
-const ASPECT_RATIOS = [
-  { name: 'Auto', value: 'auto' },
-  { name: '16:9', value: '16/9' },
-  { name: '4:3', value: '4/3' },
-  { name: '1:1', value: '1/1' },
-  { name: 'Twitter', value: '2/1' },
-];
 
 const TEXT_PRESETS = [
   { name: 'Deep Slate', value: '#1e293b' }, // Default Dark
@@ -135,7 +128,8 @@ const App = () => {
   const [opacity, setOpacity] = useState(60); // Lower opacity = more visible blur
   const [padding, setPadding] = useState(64);
   const [borderRadius, setBorderRadius] = useState(24);
-  const [aspectRatio, setAspectRatio] = useState(ASPECT_RATIOS[0]);
+  const [canvasSize, setCanvasSize] = useState({ width: 800, height: 600 });
+  const [isResizing, setIsResizing] = useState(false);
 
   const [isExporting, setIsExporting] = useState(false);
   const [isCopying, setIsCopying] = useState(false);
@@ -248,6 +242,81 @@ const App = () => {
     return () => clearTimeout(timer);
 
   }, [parsedHtml, katexStatus, autoRenderStatus, highlightStatus]);
+
+  // --- Resize Handlers ---
+
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      if (!isResizing) return;
+
+      // Calculate new size based on mouse position relative to the preview container
+      // We need to find the preview container's bounds
+      // Since the resize handle is inside the previewRef, we can use that
+      if (previewRef.current) {
+        const rect = previewRef.current.getBoundingClientRect();
+        // We want the bottom-right corner to follow the mouse
+        // But we need to account for the fact that the mouse might be outside the container
+        // The new width is the mouse X minus the container's left position
+        // The new height is the mouse Y minus the container's top position
+
+        // However, since we are centered, it might be tricky. 
+        // Let's assume the resize handle is at the bottom right of the element itself.
+        // A simpler way:
+        // New Width = Current Width + Mouse Delta X
+        // But we don't have delta easily without previous position.
+
+        // Better approach:
+        // The element top-left is fixed relative to the viewport during resize? 
+        // No, it's centered. This makes resizing tricky if we just use mouse position.
+        // If it's centered, increasing width moves both left and right edges.
+
+        // Let's try a simpler approach:
+        // Just use the mouse movement to add to width/height.
+        // We need to track previous mouse position.
+      }
+    };
+
+    const handleMouseUp = () => {
+      setIsResizing(false);
+    };
+
+    if (isResizing) {
+      window.addEventListener('mousemove', handleWindowMouseMove);
+      window.addEventListener('mouseup', handleMouseUp);
+    }
+
+    return () => {
+      window.removeEventListener('mousemove', handleWindowMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isResizing]);
+
+  // We need a ref to store the start position of the mouse and the start size
+  const resizeStartRef = useRef({ x: 0, y: 0, w: 0, h: 0 });
+
+  const handleResizeStart = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsResizing(true);
+    resizeStartRef.current = {
+      x: e.clientX,
+      y: e.clientY,
+      w: canvasSize.width,
+      h: canvasSize.height
+    };
+  };
+
+  const handleWindowMouseMove = (e) => {
+    if (!isResizing) return;
+
+    const dx = (e.clientX - resizeStartRef.current.x) * 2; // Multiply by 2 because it's centered
+    const dy = (e.clientY - resizeStartRef.current.y) * 2;
+
+    setCanvasSize({
+      width: Math.max(300, resizeStartRef.current.w + dx),
+      height: Math.max(200, resizeStartRef.current.h + dy)
+    });
+  };
 
   // --- Handlers ---
 
@@ -559,26 +628,6 @@ const App = () => {
               <div className="space-y-6">
                 <label className="section-label">Canvas & Geometry</label>
 
-                {/* Aspect Ratio */}
-                <div className="space-y-2">
-                  <div className="text-xs text-slate-500 font-medium">Aspect Ratio</div>
-                  <div className="grid grid-cols-3 gap-2">
-                    {ASPECT_RATIOS.map(ratio => (
-                      <button
-                        key={ratio.name}
-                        onClick={() => setAspectRatio(ratio)}
-                        className={`
-                                    py-1.5 text-[10px] font-bold uppercase tracking-wider rounded-lg border transition-all
-                                    ${aspectRatio.name === ratio.name
-                            ? 'bg-indigo-50 border-indigo-500 text-indigo-600'
-                            : 'bg-white border-slate-200 text-slate-500 hover:border-slate-300'}
-                                `}
-                      >
-                        {ratio.name}
-                      </button>
-                    ))}
-                  </div>
-                </div>
 
                 {[
                   { label: 'Blur', val: blur, set: setBlur, min: 0, max: 60, unit: 'px' },
@@ -616,20 +665,22 @@ const App = () => {
         {/* Rendered Output Container */}
         <div
           ref={previewRef}
-          className="relative w-full max-w-3xl shadow-2xl transition-all duration-500 ease-out overflow-hidden group grid place-items-center rounded-[36px] p-6 md:p-12"
+          className="relative shadow-2xl transition-all duration-75 ease-out overflow-hidden group grid place-items-center rounded-[36px] p-6 md:p-12"
           style={{
             ...getBackgroundStyle(),
             backgroundSize: 'cover',
             backgroundPosition: 'center',
+            width: `${canvasSize.width}px`,
+            height: `${canvasSize.height}px`,
           }}
         >
-          {/* Aspect Ratio Spacer - Enforces minimum aspect ratio but allows expansion */}
-          <div style={{
-            gridArea: '1 / 1',
-            width: '100%',
-            aspectRatio: aspectRatio.value === 'auto' ? 'auto' : aspectRatio.value,
-            pointerEvents: 'none'
-          }} />
+          {/* Resize Handle */}
+          <div
+            className="absolute bottom-0 right-0 w-8 h-8 bg-white/20 hover:bg-white/40 backdrop-blur-md cursor-nwse-resize z-50 rounded-tl-xl transition-colors flex items-center justify-center group/handle"
+            onMouseDown={handleResizeStart}
+          >
+            <div className="w-1.5 h-1.5 bg-white/50 rounded-full group-hover/handle:bg-white transition-colors" />
+          </div>
 
           {/* The Glass Card */}
           <div
@@ -663,7 +714,7 @@ const App = () => {
             }}
           >
             <div
-              className="w-full h-full overflow-auto custom-markdown"
+              className="w-full h-full overflow-hidden custom-markdown"
               style={{ minHeight: 0, minWidth: 0 }}
             >
               <div
