@@ -665,13 +665,13 @@ const App = () => {
         {/* Rendered Output Container */}
         <div
           ref={previewRef}
-          className="relative shadow-2xl transition-all duration-75 ease-out overflow-hidden group grid place-items-center rounded-[36px] p-6 md:p-12"
+          className="relative shadow-2xl transition-all duration-75 ease-out overflow-hidden group flex flex-col items-center justify-center rounded-[36px] p-6 md:p-12"
           style={{
             ...getBackgroundStyle(),
             backgroundSize: 'cover',
             backgroundPosition: 'center',
             width: `${canvasSize.width}px`,
-            height: `${canvasSize.height}px`,
+            minHeight: `${canvasSize.height}px`,
           }}
         >
           {/* Resize Handle */}
@@ -690,7 +690,8 @@ const App = () => {
                 z-10 w-full
               `}
             style={{
-              gridArea: '1 / 1',
+              width: '100%',
+              flexGrow: 1,
               fontFamily: font.name,
               padding: `${padding}px`,
               backgroundColor: themeMode === 'light'
@@ -705,7 +706,7 @@ const App = () => {
                 : '1px solid rgba(255,255,255,0.15)',
               color: textColor,
               width: '100%',
-              height: '100%',
+              minHeight: '100%',
               minHeight: 0,
               minWidth: 0,
               overflow: 'hidden',
