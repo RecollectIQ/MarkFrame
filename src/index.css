@@ -139,13 +139,19 @@ a {
 }
 
 pre {
-  background: #1a1b26 !important;
+  background: transparent !important;
+  margin-bottom: 1.5em;
+  padding: 0;
+}
+
+pre code {
+  display: block;
+  padding: 1.25rem !important;
   border-radius: 0.75rem;
-  padding: 1.25rem;
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.1);
   overflow-x: auto;
-  margin-bottom: 1.5em;
+  font-family: 'JetBrains Mono', monospace !important;
 }
 
 code {
