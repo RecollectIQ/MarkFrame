@@ -423,6 +423,32 @@ const App = () => {
 
   const parsedHtmlMemo = useMemo(() => ({ __html: parsedHtml }), [parsedHtml]);
 
+  // Shared styles for preview/export so blur works in screenshots (backdrop-filter isn't captured)
+  const backgroundStyle = useMemo(() => ({
+    ...getBackgroundStyle(),
+    backgroundSize: 'cover',
+    backgroundPosition: 'center'
+  }), [bgType, selectedGradient, customGradStart, customGradEnd, customGradDir, bgImage, bgBrightness]);
+
+  const glassTintColor = useMemo(() => (
+    themeMode === 'light'
+      ? `rgba(255, 255, 255, ${opacity / 100})`
+      : `rgba(15, 23, 42, ${opacity / 100})`
+  ), [themeMode, opacity]);
+
+  const glassBlurStyle = useMemo(() => {
+    const filterParts = [];
+    if (backgroundStyle.filter) filterParts.push(backgroundStyle.filter);
+    filterParts.push(`blur(${blur}px)`);
+
+    return {
+      backgroundImage: backgroundStyle.backgroundImage,
+      backgroundSize: backgroundStyle.backgroundSize,
+      backgroundPosition: backgroundStyle.backgroundPosition,
+      filter: filterParts.join(' '),
+    };
+  }, [backgroundStyle, blur]);
+
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 font-sans overflow-hidden flex flex-col md:flex-row">
 
@@ -667,9 +693,7 @@ const App = () => {
           ref={previewRef}
           className="relative shadow-2xl transition-all duration-75 ease-out overflow-hidden group flex flex-col items-center justify-center rounded-[36px] p-6 md:p-12"
           style={{
-            ...getBackgroundStyle(),
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
+            ...backgroundStyle,
             width: `${canvasSize.width}px`,
             minHeight: `${canvasSize.height}px`,
           }}
@@ -694,28 +718,43 @@ const App = () => {
               flexGrow: 1,
               fontFamily: font.name,
               padding: `${padding}px`,
-              backgroundColor: themeMode === 'light'
-                ? `rgba(255, 255, 255, ${opacity / 100})`
-                : `rgba(15, 23, 42, ${opacity / 100})`,
-              backdropFilter: `blur(${blur}px)`,
-              WebkitBackdropFilter: `blur(${blur}px)`,
               borderRadius: `${borderRadius}px`,
               boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
               border: themeMode === 'light'
                 ? '1px solid rgba(255,255,255,0.6)'
                 : '1px solid rgba(255,255,255,0.15)',
               color: textColor,
-              width: '100%',
               minHeight: '100%',
-              minHeight: 0,
               minWidth: 0,
               overflow: 'hidden',
               justifySelf: 'stretch',
               alignSelf: 'stretch'
             }}
           >
+            {/* Blur layer replicated inside card so exports capture the frosted effect */}
             <div
-              className="w-full h-full overflow-hidden custom-markdown"
+              className="absolute inset-0 pointer-events-none"
+              aria-hidden="true"
+              style={{
+                ...glassBlurStyle,
+                borderRadius: `${borderRadius}px`,
+                transform: 'scale(1.03)',
+                transformOrigin: 'center'
+              }}
+            />
+
+            {/* Tint layer to control glass opacity without relying on backdrop-filter */}
+            <div
+              className="absolute inset-0 pointer-events-none"
+              aria-hidden="true"
+              style={{
+                backgroundColor: glassTintColor,
+                borderRadius: `${borderRadius}px`
+              }}
+            />
+
+            <div
+              className="relative z-10 w-full h-full overflow-hidden custom-markdown"
               style={{ minHeight: 0, minWidth: 0 }}
             >
               <div
@@ -727,7 +766,7 @@ const App = () => {
 
             {/* Watermark */}
             <div
-              className="pointer-events-none absolute bottom-6 right-8 text-[10px] font-bold opacity-40 tracking-[0.25em] uppercase"
+              className="pointer-events-none absolute bottom-6 right-8 text-[10px] font-bold opacity-40 tracking-[0.25em] uppercase z-10"
               style={{ color: textColor }}
             >
               MarkFrame
