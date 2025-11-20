@@ -698,13 +698,27 @@ const App = () => {
             minHeight: `${canvasSize.height}px`,
           }}
         >
-          {/* Resize Handle */}
-          <div
-            className="absolute bottom-0 right-0 w-8 h-8 bg-white/20 hover:bg-white/40 backdrop-blur-md cursor-nwse-resize z-50 rounded-tl-xl transition-colors flex items-center justify-center group/handle"
-            onMouseDown={handleResizeStart}
-          >
-            <div className="w-1.5 h-1.5 bg-white/50 rounded-full group-hover/handle:bg-white transition-colors" />
-          </div>
+          {/* Resize Handle (hidden while exporting/copying so it won't appear in captures) */}
+          {!(isExporting || isCopying) && (
+            <div
+              className="absolute bottom-0 right-0 w-8 h-8 bg-white/25 hover:bg-white/40 backdrop-blur-md cursor-nwse-resize z-50 rounded-tl-xl transition-colors flex items-center justify-center group/handle"
+              onMouseDown={handleResizeStart}
+              title="Drag to resize canvas"
+            >
+              <svg
+                className="w-3 h-3 opacity-80 group-hover/handle:opacity-100 transition-opacity"
+                viewBox="0 0 12 12"
+                fill="none"
+                stroke="white"
+                strokeWidth="1.25"
+                strokeLinecap="round"
+              >
+                <path d="M3 9L9 3" />
+                <path d="M5.5 9L9 5.5" />
+                <path d="M9 9L9 9" />
+              </svg>
+            </div>
+          )}
 
           {/* The Glass Card */}
           <div
