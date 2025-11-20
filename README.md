@@ -1,6 +1,6 @@
 # MarkFrame
 
-A beautiful glass morphism markdown editor that transforms your markdown into stunning, shareable images with customizable backgrounds, typography, and glass effects.
+A beautiful website that generates stunning images from your markdown. Transform your markdown into shareable, visually appealing images with customizable backgrounds, typography, and glass morphism effects.
 
 ![MarkFrame](https://img.shields.io/badge/MarkFrame-v0.1.0-blue)
 ![React](https://img.shields.io/badge/React-19.2.0-61dafb)
@@ -47,14 +47,14 @@ The app will open at [http://localhost:3000](http://localhost:3000)
 
 ## Usage
 
-1. **Edit Tab**: Write your markdown in the editor on the left sidebar
+1. **Edit Tab**: Enter your markdown content in the input area
 2. **Style Tab**: Customize the appearance:
    - Choose background (gradients or upload image)
    - Select font family
    - Pick text color
    - Adjust glass properties (blur, opacity, padding, roundness)
 3. **Preview**: See your markdown rendered in real-time with glass morphism effects
-4. **Export**: Click the download button to export as PNG
+4. **Export**: Click the download button to generate and download your markdown as a beautiful PNG image
 
 ### Markdown Features
 
