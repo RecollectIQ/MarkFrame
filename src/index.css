@@ -74,8 +74,6 @@ a {
 .custom-markdown h2 {
   font-size: 1.5em;
   letter-spacing: -0.025em;
-  border-bottom: 1px solid currentColor;
-  padding-bottom: 0.3em;
   opacity: 0.9;
 }
 
