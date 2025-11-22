@@ -60,8 +60,8 @@ a {
 .custom-markdown h6 {
   font-weight: 800;
   line-height: 1.1;
-  margin-top: 1.5em;
-  margin-bottom: 0.6em;
+  margin-top: 0.25em;
+  margin-bottom: 1em;
   color: inherit;
 }
 
@@ -220,4 +220,8 @@ code {
   font-weight: 600;
   border: 1px solid rgba(255, 255, 255, 0.2);
   mix-blend-mode: hard-light;
+}
+
+.custom-markdown>*:first-child {
+  margin-top: 0 !important;
 }

@@ -723,7 +723,7 @@ const App = () => {
           {/* The Glass Card */}
           <div
             className={`
-                relative flex flex-col justify-center
+                relative flex flex-col justify-start
                 transition-all duration-500 ease-out
                 z-10 w-full
               `}
