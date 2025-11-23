@@ -767,6 +767,13 @@ const App = () => {
               }}
             />
 
+            {/* Mac Window Header */}
+            <div className="absolute top-6 left-6 flex items-center gap-2 z-20 opacity-80">
+              <div className="w-3 h-3 rounded-full bg-[#ff5f56] shadow-sm border border-black/5" />
+              <div className="w-3 h-3 rounded-full bg-[#ffbd2e] shadow-sm border border-black/5" />
+              <div className="w-3 h-3 rounded-full bg-[#27c93f] shadow-sm border border-black/5" />
+            </div>
+
             <div
               className="relative z-10 w-full h-full overflow-hidden custom-markdown"
               style={{ minHeight: 0, minWidth: 0 }}
