@@ -8,6 +8,9 @@ import {
   Check
 } from 'lucide-react';
 
+import 'katex/dist/katex.min.css';
+import renderMathInElement from 'katex/dist/contrib/auto-render';
+
 // --- Constants ---
 
 const FONTS = [
@@ -104,6 +107,7 @@ const useStyle = (href, id) => {
 
 // --- Main Component ---
 
+
 const App = () => {
   // --- State ---
   const [markdown, setMarkdown] = useState(DEFAULT_MARKDOWN);
@@ -142,13 +146,10 @@ const App = () => {
 
   // --- Load Libraries ---
   const markedStatus = useScript('https://cdn.jsdelivr.net/npm/marked/marked.min.js');
-  const katexStatus = useScript('https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js');
-  const autoRenderStatus = useScript('https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js');
+  // KaTeX loaded via import now
   const highlightStatus = useScript('https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js');
   // SWITCHED: using dom-to-image for better CSS filter support
   const domToImageStatus = useScript('https://cdnjs.cloudflare.com/ajax/libs/dom-to-image/2.6.0/dom-to-image.min.js');
-
-  useStyle('https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css');
 
   // Dynamic Code Theme
   const codeThemeUrl = useMemo(() => {
@@ -208,26 +209,19 @@ const App = () => {
     if (!contentRef.current) return;
 
     const renderExtras = () => {
-      if (
-        katexStatus === 'ready' &&
-        autoRenderStatus === 'ready' &&
-        window.renderMathInElement &&
-        window.katex &&
-        typeof window.katex.render === 'function'
-      ) {
-        try {
-          window.renderMathInElement(contentRef.current, {
-            delimiters: [
-              { left: '$$', right: '$$', display: true },
-              { left: '$', right: '$', display: false },
-              { left: '\\(', right: '\\)', display: false },
-              { left: '\\[', right: '\\]', display: true }
-            ],
-            throwOnError: false,
-            output: 'html',
-          });
-        } catch (e) { console.warn("Math render error", e); }
-      }
+      // Render Math using imported function
+      try {
+        renderMathInElement(contentRef.current, {
+          delimiters: [
+            { left: '$$', right: '$$', display: true },
+            { left: '$', right: '$', display: false },
+            { left: '\\(', right: '\\)', display: false },
+            { left: '\\[', right: '\\]', display: true }
+          ],
+          throwOnError: false,
+          output: 'html',
+        });
+      } catch (e) { console.warn("Math render error", e); }
 
       if (highlightStatus === 'ready' && window.hljs) {
         const blocks = contentRef.current.querySelectorAll('pre code');
@@ -241,7 +235,7 @@ const App = () => {
     const timer = setTimeout(renderExtras, 50);
     return () => clearTimeout(timer);
 
-  }, [parsedHtml, katexStatus, autoRenderStatus, highlightStatus]);
+  }, [parsedHtml, highlightStatus]);
 
   // --- Resize Handlers ---
 
