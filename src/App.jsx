@@ -329,6 +329,8 @@ const App = () => {
         setBgType('image');
       };
       reader.readAsDataURL(file);
+      // Reset the input so the same file can be selected again if needed
+      e.target.value = '';
     }
   };
 
@@ -458,9 +460,7 @@ const App = () => {
         {/* Header */}
         <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-white sticky top-0 z-20">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-violet-600 rounded-lg flex items-center justify-center shadow-lg shadow-indigo-200">
-              <Sparkles className="w-4 h-4 text-white" />
-            </div>
+            <img src="/logo.png" alt="Logo" className="w-8 h-8 rounded-lg shadow-sm" />
             <span className="font-bold text-lg text-slate-900 tracking-tight">MarkFrame</span>
           </div>
           <div className="flex gap-2">
