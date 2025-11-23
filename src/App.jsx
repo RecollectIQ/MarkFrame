@@ -8,6 +8,9 @@ import {
   Check
 } from 'lucide-react';
 
+import 'katex/dist/katex.min.css';
+import renderMathInElement from 'katex/dist/contrib/auto-render';
+
 // --- Constants ---
 
 const FONTS = [
@@ -104,6 +107,7 @@ const useStyle = (href, id) => {
 
 // --- Main Component ---
 
+
 const App = () => {
   // --- State ---
   const [markdown, setMarkdown] = useState(DEFAULT_MARKDOWN);
@@ -142,13 +146,10 @@ const App = () => {
 
   // --- Load Libraries ---
   const markedStatus = useScript('https://cdn.jsdelivr.net/npm/marked/marked.min.js');
-  const katexStatus = useScript('https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js');
-  const autoRenderStatus = useScript('https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js');
+  // KaTeX loaded via import now
   const highlightStatus = useScript('https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js');
   // SWITCHED: using dom-to-image for better CSS filter support
   const domToImageStatus = useScript('https://cdnjs.cloudflare.com/ajax/libs/dom-to-image/2.6.0/dom-to-image.min.js');
-
-  useStyle('https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css');
 
   // Dynamic Code Theme
   const codeThemeUrl = useMemo(() => {
@@ -208,26 +209,19 @@ const App = () => {
     if (!contentRef.current) return;
 
     const renderExtras = () => {
-      if (
-        katexStatus === 'ready' &&
-        autoRenderStatus === 'ready' &&
-        window.renderMathInElement &&
-        window.katex &&
-        typeof window.katex.render === 'function'
-      ) {
-        try {
-          window.renderMathInElement(contentRef.current, {
-            delimiters: [
-              { left: '$$', right: '$$', display: true },
-              { left: '$', right: '$', display: false },
-              { left: '\\(', right: '\\)', display: false },
-              { left: '\\[', right: '\\]', display: true }
-            ],
-            throwOnError: false,
-            output: 'html',
-          });
-        } catch (e) { console.warn("Math render error", e); }
-      }
+      // Render Math using imported function
+      try {
+        renderMathInElement(contentRef.current, {
+          delimiters: [
+            { left: '$$', right: '$$', display: true },
+            { left: '$', right: '$', display: false },
+            { left: '\\(', right: '\\)', display: false },
+            { left: '\\[', right: '\\]', display: true }
+          ],
+          throwOnError: false,
+          output: 'html',
+        });
+      } catch (e) { console.warn("Math render error", e); }
 
       if (highlightStatus === 'ready' && window.hljs) {
         const blocks = contentRef.current.querySelectorAll('pre code');
@@ -241,7 +235,7 @@ const App = () => {
     const timer = setTimeout(renderExtras, 50);
     return () => clearTimeout(timer);
 
-  }, [parsedHtml, katexStatus, autoRenderStatus, highlightStatus]);
+  }, [parsedHtml, highlightStatus]);
 
   // --- Resize Handlers ---
 
@@ -329,6 +323,8 @@ const App = () => {
         setBgType('image');
       };
       reader.readAsDataURL(file);
+      // Reset the input so the same file can be selected again if needed
+      e.target.value = '';
     }
   };
 
@@ -458,9 +454,7 @@ const App = () => {
         {/* Header */}
         <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-white sticky top-0 z-20">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-violet-600 rounded-lg flex items-center justify-center shadow-lg shadow-indigo-200">
-              <Sparkles className="w-4 h-4 text-white" />
-            </div>
+            <img src="/logo.png" alt="Logo" className="w-8 h-8 rounded-lg shadow-sm" />
             <span className="font-bold text-lg text-slate-900 tracking-tight">MarkFrame</span>
           </div>
           <div className="flex gap-2">
@@ -723,7 +717,7 @@ const App = () => {
           {/* The Glass Card */}
           <div
             className={`
-                relative flex flex-col justify-center
+                relative flex flex-col justify-start
                 transition-all duration-500 ease-out
                 z-10 w-full
               `}
@@ -766,6 +760,13 @@ const App = () => {
                 borderRadius: `${borderRadius}px`
               }}
             />
+
+            {/* Mac Window Header */}
+            <div className="absolute top-6 left-6 flex items-center gap-2 z-20 opacity-80">
+              <div className="w-3 h-3 rounded-full bg-[#ff5f56] shadow-sm border border-black/5" />
+              <div className="w-3 h-3 rounded-full bg-[#ffbd2e] shadow-sm border border-black/5" />
+              <div className="w-3 h-3 rounded-full bg-[#27c93f] shadow-sm border border-black/5" />
+            </div>
 
             <div
               className="relative z-10 w-full h-full overflow-hidden custom-markdown"
