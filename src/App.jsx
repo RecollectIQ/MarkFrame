@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useLayoutEffect } from 'react';
 import {
   Download,
   Palette,
@@ -333,6 +333,24 @@ const App = () => {
     };
   }, [isResizing, isSidebarResizing]);
 
+  // --- Auto Resize Height ---
+  useLayoutEffect(() => {
+    if (contentRef.current) {
+      const contentHeight = contentRef.current.scrollHeight;
+      // Calculate total required height including padding and footer space
+      // padding * 2 covers top and bottom padding
+      // Plus some extra buffer for the footer (approx 60px safe area)
+      const requiredHeight = contentHeight + (padding * 2) + 40; 
+      
+      if (requiredHeight > canvasSize.height) {
+        setCanvasSize(prev => ({
+          ...prev,
+          height: requiredHeight
+        }));
+      }
+    }
+  }, [parsedHtml, padding, fontSize, font]);
+
   const resizeStartRef = useRef({ x: 0, y: 0, w: 0, h: 0 });
 
   const handleResizeStart = (e) => {
@@ -509,7 +527,7 @@ const App = () => {
 
           {/* --- Sidebar --- */}
           <div
-            className="relative bg-white dark:bg-[#2a2a2a] border-r border-slate-200 dark:border-[#424242] flex flex-col h-[60vh] md:h-auto md:min-h-screen z-10 shadow-xl transition-colors duration-300 flex-shrink-0"
+            className="relative bg-white dark:bg-[#2a2a2a] border-r border-slate-200 dark:border-[#424242] flex flex-col h-[60vh] md:h-screen z-10 shadow-xl transition-colors duration-300 flex-shrink-0"
             style={{ width: isMobile ? '100%' : `${sidebarWidth}px` }}
           >
             <div
@@ -758,7 +776,7 @@ const App = () => {
           <div 
              ref={containerRef}
              // FIXED: Using justify-center to vertically align the card, reducing bottom gap on mobile
-             className="flex-1 bg-slate-100 dark:bg-[#212121] relative overflow-hidden flex flex-col items-center justify-center p-4 md:p-8 select-none transition-colors duration-300 min-h-[40vh] md:min-h-0"
+             className="flex-1 bg-slate-100 dark:bg-[#212121] relative overflow-y-auto overflow-x-hidden flex flex-col items-center justify-center p-4 md:p-8 select-none transition-colors duration-300 min-h-[40vh] md:min-h-0"
           >
             <div className="absolute inset-0 opacity-[0.04] pointer-events-none" style={{
               backgroundImage: `linear-gradient(#6366f1 1.5px, transparent 1.5px), linear-gradient(90deg, #6366f1 1.5px, transparent 1.5px)`,
