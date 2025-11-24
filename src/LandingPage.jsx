@@ -22,8 +22,10 @@ const LandingPage = ({ onEnter, uiTheme, setUiTheme }) => {
         easing: "cubic-bezier(.03,.98,.52,.99)",    // Easing on enter/exit.
     };
 
+    const isDark = uiTheme === 'dark' || (uiTheme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+
     return (
-        <div className="relative w-full h-screen flex flex-col items-center justify-center overflow-hidden bg-slate-50">
+        <div className={`relative w-full h-screen flex flex-col items-center justify-center overflow-hidden transition-colors duration-300 ${isDark ? 'bg-[#212121]' : 'bg-slate-50'}`}>
             <Particles
                 id="tsparticles"
                 init={particlesInit}
@@ -58,10 +60,10 @@ const LandingPage = ({ onEnter, uiTheme, setUiTheme }) => {
                     },
                     particles: {
                         color: {
-                            value: "#1e293b", // Dark slate color
+                            value: isDark ? "#ffffff" : "#1e293b", // White in dark mode, Dark slate in light
                         },
                         links: {
-                            color: "#1e293b",
+                            color: isDark ? "#ffffff" : "#1e293b",
                             distance: 150,
                             enable: true,
                             opacity: 0.2,
@@ -115,7 +117,7 @@ const LandingPage = ({ onEnter, uiTheme, setUiTheme }) => {
                         <div
                             className="w-48 h-48 md:w-64 md:h-64 drop-shadow-2xl opacity-90"
                             style={{
-                                backgroundColor: '#475568',
+                                backgroundColor: isDark ? '#ffffff' : '#475568',
                                 maskImage: 'url(/logo-new.png)',
                                 maskSize: 'contain',
                                 maskRepeat: 'no-repeat',
@@ -126,10 +128,10 @@ const LandingPage = ({ onEnter, uiTheme, setUiTheme }) => {
                                 WebkitMaskPosition: 'center'
                             }}
                         />
-                        <h1 className="mt-8 text-6xl md:text-8xl font-black tracking-[0.2em] uppercase select-none" style={{ color: '#475568' }}>
+                        <h1 className={`mt-8 text-6xl md:text-8xl font-black tracking-[0.2em] uppercase select-none transition-colors duration-300 ${isDark ? 'text-white' : 'text-[#475568]'}`}>
                             MarkFrame
                         </h1>
-                        <p className="mt-4 text-xl font-medium tracking-[0.3em] uppercase" style={{ color: '#94a3b8' }}>
+                        <p className={`mt-4 text-xl font-medium tracking-[0.3em] uppercase transition-colors duration-300 ${isDark ? 'text-gray-400' : 'text-[#94a3b8]'}`}>
                             Click to Enter
                         </p>
                     </div>
