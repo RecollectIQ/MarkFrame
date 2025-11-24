@@ -7,7 +7,8 @@ import {
   Check,
   Moon,
   Sun,
-  Monitor
+  Monitor,
+  Github
 } from 'lucide-react';
 import { toPng, toBlob } from 'html-to-image';
 
@@ -812,6 +813,17 @@ const App = () => {
              // Use overflow-y-auto without vertical centering to avoid clipping taller cards
              className="flex-1 bg-slate-100 dark:bg-[#212121] relative overflow-y-auto overflow-x-hidden flex flex-col p-4 md:p-8 select-none transition-colors duration-300 min-h-[40vh] md:min-h-0"
           >
+            <div className="absolute top-6 right-6 z-20">
+              <a
+                href="https://github.com/RecollectIQ/MarkFrame"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-center p-2 rounded-full bg-white/20 dark:bg-black/20 hover:bg-white/30 dark:hover:bg-black/30 text-slate-700 dark:text-slate-200 backdrop-blur-sm transition-all shadow-sm border border-white/10"
+              >
+                <Github className="w-5 h-5" />
+              </a>
+            </div>
+
             <div className="absolute inset-0 opacity-[0.04] pointer-events-none" style={{
               backgroundImage: `linear-gradient(#6366f1 1.5px, transparent 1.5px), linear-gradient(90deg, #6366f1 1.5px, transparent 1.5px)`,
               backgroundSize: '24px 24px'
