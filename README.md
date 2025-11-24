@@ -1,10 +1,22 @@
-# MarkFrame
+<p align="center">
+  <img src="./images/logo_horz.png" alt="MarkFrame logo" width="420" />
+</p>
 
-A beautiful website that generates stunning images from your markdown. Transform your markdown into shareable, visually appealing images with customizable backgrounds, typography, and glass morphism effects.
+<h1 align="center">MarkFrame</h1>
 
-![MarkFrame](https://img.shields.io/badge/MarkFrame-v0.1.0-blue)
-![React](https://img.shields.io/badge/React-19.2.0-61dafb)
-![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.4.15-38bdf8)
+<p align="center">
+  A beautiful website that generates stunning images from your markdown.<br />
+  Transform your markdown into shareable, visually appealing images <br >with customizable
+  backgrounds, typography, and glass morphism effects.
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/MarkFrame-v0.1.5-blue" />
+  <img src="https://img.shields.io/badge/React-19.2.0-61dafb" />
+  <img src="https://img.shields.io/badge/Tailwind-3.4.15-38bdf8" />
+</p>
+
+---
 
 ## Features
 
