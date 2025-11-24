@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./images/logo_horz.png" alt="MarkFrame logo" width="420" />
+  <img src="./images/rounded-banner.png" alt="MarkFrame logo" width="600" />
 </p>
 
 <h1 align="center">MarkFrame</h1>
