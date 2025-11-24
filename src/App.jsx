@@ -7,6 +7,7 @@ import {
   Copy,
   Check
 } from 'lucide-react';
+import { toPng, toBlob } from 'html-to-image';
 
 import 'katex/dist/katex.min.css';
 import renderMathInElement from 'katex/dist/contrib/auto-render';
@@ -152,8 +153,6 @@ const App = () => {
   const markedStatus = useScript('https://cdn.jsdelivr.net/npm/marked/marked.min.js');
   // KaTeX loaded via import now
   const highlightStatus = useScript('https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js');
-  // SWITCHED: using dom-to-image for better CSS filter support
-  const domToImageStatus = useScript('https://cdnjs.cloudflare.com/ajax/libs/dom-to-image/2.6.0/dom-to-image.min.js');
 
   // Dynamic Code Theme
   const codeThemeUrl = useMemo(() => {
@@ -333,7 +332,7 @@ const App = () => {
   };
 
   const handleExport = async () => {
-    if (domToImageStatus !== 'ready' || !previewRef.current) return;
+    if (!previewRef.current) return;
     setIsExporting(true);
 
     // We need to wait a moment to ensure the spinner state renders before blocking thread
@@ -345,18 +344,14 @@ const App = () => {
         const exportOptions = {
           quality: 0.95,
           cacheBust: true,
-          width: node.offsetWidth * scale,
-          height: node.offsetHeight * scale,
+          pixelRatio: scale,
           style: {
-            transform: `scale(${scale})`,
-            transformOrigin: 'top left',
-            width: `${node.offsetWidth}px`,
-            height: `${node.offsetHeight}px`
+            transform: 'none', // html-to-image handles scaling via pixelRatio better usually, or we just let it capture as is
           }
         };
 
-        // domtoimage usually handles filters better than html2canvas
-        const dataUrl = await window.domtoimage.toPng(node, exportOptions);
+        // html-to-image handles fonts better
+        const dataUrl = await toPng(node, exportOptions);
 
         const link = document.createElement('a');
         link.download = `markframe-${Date.now()}.png`;
@@ -372,7 +367,7 @@ const App = () => {
   };
 
   const handleCopy = async () => {
-    if (domToImageStatus !== 'ready' || !previewRef.current) return;
+    if (!previewRef.current) return;
     setIsCopying(true);
 
     setTimeout(async () => {
@@ -382,17 +377,10 @@ const App = () => {
         const exportOptions = {
           quality: 0.95,
           cacheBust: true,
-          width: node.offsetWidth * scale,
-          height: node.offsetHeight * scale,
-          style: {
-            transform: `scale(${scale})`,
-            transformOrigin: 'top left',
-            width: `${node.offsetWidth}px`,
-            height: `${node.offsetHeight}px`
-          }
+          pixelRatio: scale,
         };
 
-        const blob = await window.domtoimage.toBlob(node, exportOptions);
+        const blob = await toBlob(node, exportOptions);
         await navigator.clipboard.write([
           new ClipboardItem({ 'image/png': blob })
         ]);
@@ -457,7 +445,7 @@ const App = () => {
         <div className="min-h-screen bg-slate-50 text-slate-800 font-sans overflow-hidden flex flex-col md:flex-row">
 
           {/* --- Sidebar --- */}
-          <div className="w-full md:w-96 bg-white border-r border-slate-200 flex flex-col h-[45vh] md:h-screen z-10 shadow-xl">
+          <div className="w-full md:w-96 bg-white border-r border-slate-200 flex flex-col h-[45vh] md:h-auto md:min-h-screen z-10 shadow-xl">
 
             {/* Header */}
             <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-white sticky top-0 z-20">
