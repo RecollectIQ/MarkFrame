@@ -5,7 +5,10 @@ import {
   Sparkles,
   Image as ImageIcon,
   Copy,
-  Check
+  Check,
+  Moon,
+  Sun,
+  Monitor
 } from 'lucide-react';
 import { toPng, toBlob } from 'html-to-image';
 
@@ -22,6 +25,7 @@ const FONTS = [
   { name: 'Roboto', value: 'font-roboto', label: 'Clean', url: 'https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap' },
   { name: 'Poppins', value: 'font-poppins', label: 'Geometric', url: 'https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap' },
   { name: 'Lora', value: 'font-lora', label: 'Serif', url: 'https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,700;1,400&display=swap' },
+  { name: 'Custom', value: 'custom', label: 'Google Font', url: '' },
 ];
 
 
@@ -129,8 +133,11 @@ const App = () => {
   const [bgBrightness, setBgBrightness] = useState(100);
 
   const [font, setFont] = useState(FONTS[0]);
+  const [customFontName, setCustomFontName] = useState('');
+  const [fontSize, setFontSize] = useState(16);
   const [textColor, setTextColor] = useState('#1e293b');
-  const [themeMode, setThemeMode] = useState('light');
+  const [themeMode, setThemeMode] = useState('light'); // This is for the card theme
+  const [uiTheme, setUiTheme] = useState('system'); // 'light', 'dark', 'system'
 
   // Glass Properties
   const [blur, setBlur] = useState(40);
@@ -139,6 +146,8 @@ const App = () => {
   const [borderRadius, setBorderRadius] = useState(24);
   const [canvasSize, setCanvasSize] = useState({ width: 800, height: 600 });
   const [isResizing, setIsResizing] = useState(false);
+  const [sidebarWidth, setSidebarWidth] = useState(520); // Default wider based on user feedback
+  const [isSidebarResizing, setIsSidebarResizing] = useState(false);
 
   const [isExporting, setIsExporting] = useState(false);
   const [isCopying, setIsCopying] = useState(false);
@@ -174,6 +183,36 @@ const App = () => {
       }
     });
   }, []);
+
+  // Load Custom Font
+  useEffect(() => {
+    if (font.name === 'Custom' && customFontName) {
+      const linkId = 'custom-font-link';
+      let link = document.getElementById(linkId);
+      if (!link) {
+        link = document.createElement('link');
+        link.id = linkId;
+        link.rel = 'stylesheet';
+        document.head.appendChild(link);
+      }
+      // Basic Google Fonts URL construction
+      const formattedName = customFontName.split(' ').join('+');
+      link.href = `https://fonts.googleapis.com/css2?family=${formattedName}:wght@400;700&display=swap`;
+    }
+  }, [font, customFontName]);
+
+  // Handle UI Theme
+  useEffect(() => {
+    const root = window.document.documentElement;
+    root.classList.remove('light', 'dark');
+
+    if (uiTheme === 'system') {
+      const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      root.classList.add(systemTheme);
+    } else {
+      root.classList.add(uiTheme);
+    }
+  }, [uiTheme]);
 
   // --- Markdown Processing ---
 
@@ -282,11 +321,18 @@ const App = () => {
       window.addEventListener('mouseup', handleMouseUp);
     }
 
+    if (isSidebarResizing) {
+      window.addEventListener('mousemove', handleSidebarMouseMove);
+      window.addEventListener('mouseup', handleSidebarMouseUp);
+    }
+
     return () => {
       window.removeEventListener('mousemove', handleWindowMouseMove);
       window.removeEventListener('mouseup', handleMouseUp);
+      window.removeEventListener('mousemove', handleSidebarMouseMove);
+      window.removeEventListener('mouseup', handleSidebarMouseUp);
     };
-  }, [isResizing]);
+  }, [isResizing, isSidebarResizing]);
 
   // We need a ref to store the start position of the mouse and the start size
   const resizeStartRef = useRef({ x: 0, y: 0, w: 0, h: 0 });
@@ -313,6 +359,28 @@ const App = () => {
       width: Math.max(300, resizeStartRef.current.w + dx),
       height: Math.max(200, resizeStartRef.current.h + dy)
     });
+  };
+
+  // Sidebar Resize
+  const sidebarResizeStartRef = useRef({ x: 0, w: 0 });
+
+  const handleSidebarResizeStart = (e) => {
+    e.preventDefault();
+    setIsSidebarResizing(true);
+    sidebarResizeStartRef.current = {
+      x: e.clientX,
+      w: sidebarWidth
+    };
+  };
+
+  const handleSidebarMouseMove = (e) => {
+    if (!isSidebarResizing) return;
+    const dx = e.clientX - sidebarResizeStartRef.current.x;
+    setSidebarWidth(Math.max(250, Math.min(800, sidebarResizeStartRef.current.w + dx)));
+  };
+
+  const handleSidebarMouseUp = () => {
+    setIsSidebarResizing(false);
   };
 
   // --- Handlers ---
@@ -442,24 +510,39 @@ const App = () => {
       {showLanding ? (
         <LandingPage onEnter={() => setShowLanding(false)} />
       ) : (
-        <div className="min-h-screen bg-slate-50 text-slate-800 font-sans overflow-hidden flex flex-col md:flex-row">
+        <div className="min-h-screen bg-slate-50 dark:bg-[#212121] text-slate-800 dark:text-[#e0e0e0] font-sans overflow-hidden flex flex-col md:flex-row transition-colors duration-300">
 
           {/* --- Sidebar --- */}
-          <div className="w-full md:w-96 bg-white border-r border-slate-200 flex flex-col h-[45vh] md:h-auto md:min-h-screen z-10 shadow-xl">
+          <div
+            className="relative bg-white dark:bg-[#2a2a2a] border-r border-slate-200 dark:border-[#424242] flex flex-col h-[45vh] md:h-auto md:min-h-screen z-10 shadow-xl transition-colors duration-300 flex-shrink-0"
+            style={{ width: `${sidebarWidth}px` }}
+          >
+            {/* Sidebar Resize Handle */}
+            <div
+              className="absolute top-0 right-0 w-1 h-full cursor-col-resize hover:bg-indigo-500/50 z-50 transition-colors"
+              onMouseDown={handleSidebarResizeStart}
+            />
 
             {/* Header */}
-            <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-white sticky top-0 z-20">
+            <div className="p-5 border-b border-slate-100 dark:border-[#424242] flex items-center justify-between bg-white dark:bg-[#2a2a2a] sticky top-0 z-20 transition-colors duration-300">
               <div className="flex items-center gap-2">
-                <img src="/logo.png" alt="Logo" className="w-8 h-8 rounded-lg shadow-sm" />
-                <span className="font-bold text-lg text-slate-900 tracking-[0.2em] uppercase">MarkFrame</span>
+                <img src="/logo-new.png" alt="Logo" className="h-8 w-auto object-contain" />
+                <span className="font-bold text-lg text-slate-900 dark:text-white tracking-[0.2em] uppercase">MarkFrame</span>
               </div>
               <div className="flex gap-2">
+                <button
+                  onClick={() => setUiTheme(prev => prev === 'light' ? 'dark' : prev === 'dark' ? 'system' : 'light')}
+                  className="p-2 rounded-lg transition-all shadow-md active:scale-95 bg-white dark:bg-[#333] text-slate-700 dark:text-[#e0e0e0] border border-slate-200 dark:border-[#424242] hover:bg-slate-50 dark:hover:bg-[#424242]"
+                  title={`Theme: ${uiTheme}`}
+                >
+                  {uiTheme === 'light' ? <Sun className="w-4 h-4" /> : uiTheme === 'dark' ? <Moon className="w-4 h-4" /> : <Monitor className="w-4 h-4" />}
+                </button>
                 <button
                   onClick={handleCopy}
                   disabled={isCopying || isExporting}
                   className={`
                     p-2 rounded-lg transition-all shadow-md active:scale-95 disabled:opacity-50 flex items-center gap-2
-                    ${copySuccess ? 'bg-green-500 text-white' : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-50'}
+                    ${copySuccess ? 'bg-green-500 text-white' : 'bg-white dark:bg-[#333] text-slate-700 dark:text-[#e0e0e0] border border-slate-200 dark:border-[#424242] hover:bg-slate-50 dark:hover:bg-[#424242]'}
                 `}
                   title="Copy to Clipboard"
                 >
@@ -484,12 +567,12 @@ const App = () => {
             </div>
 
             {/* Tabs */}
-            <div className="flex p-2 mx-4 mt-4 bg-slate-100 rounded-xl">
+            <div className="flex p-2 mx-4 mt-4 bg-slate-100 dark:bg-[#212121] rounded-xl transition-colors duration-300">
               {['edit', 'style'].map(tab => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
-                  className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold uppercase tracking-wider transition-all ${activeTab === tab ? 'bg-white shadow-sm text-indigo-600' : 'text-slate-500 hover:text-slate-700'}`}
+                  className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold uppercase tracking-wider transition-all ${activeTab === tab ? 'bg-white dark:bg-[#333] shadow-sm text-indigo-600 dark:text-indigo-400' : 'text-slate-500 dark:text-[#9e9e9e] hover:text-slate-700 dark:hover:text-[#e0e0e0]'}`}
                 >
                   {tab}
                 </button>
@@ -504,7 +587,7 @@ const App = () => {
                   <textarea
                     value={markdown}
                     onChange={(e) => setMarkdown(e.target.value)}
-                    className="flex-1 w-full bg-slate-50 border-slate-200 border rounded-xl p-4 text-sm font-mono text-slate-700 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none resize-none leading-relaxed"
+                    className="flex-1 w-full bg-slate-50 dark:bg-[#212121] border-slate-200 dark:border-[#424242] border rounded-xl p-4 text-sm font-mono text-slate-700 dark:text-[#e0e0e0] focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none resize-none leading-relaxed transition-colors duration-300"
                     placeholder="Type Markdown here..."
                   />
                   <div className="flex gap-2 justify-center text-[10px] font-mono text-slate-400 uppercase tracking-widest">
@@ -533,24 +616,24 @@ const App = () => {
                       ))}
                       <button
                         onClick={() => setBgType('custom')}
-                        className={`aspect-square rounded-xl ring-offset-2 flex items-center justify-center bg-slate-100 border-2 border-dashed border-slate-300 transition-all ${bgType === 'custom' ? 'ring-2 ring-indigo-500 scale-105 border-solid border-transparent bg-white' : 'hover:scale-105 hover:bg-slate-200'}`}
+                        className={`aspect-square rounded-xl ring-offset-2 flex items-center justify-center bg-slate-100 dark:bg-[#333] border-2 border-dashed border-slate-300 dark:border-[#424242] transition-all ${bgType === 'custom' ? 'ring-2 ring-indigo-500 scale-105 border-solid border-transparent bg-white dark:bg-[#424242]' : 'hover:scale-105 hover:bg-slate-200 dark:hover:bg-[#424242]'}`}
                         title="Custom Gradient"
                       >
-                        <Palette className="w-4 h-4 text-slate-500" />
+                        <Palette className="w-4 h-4 text-slate-500 dark:text-[#9e9e9e]" />
                       </button>
                     </div>
 
                     {/* Custom Gradient Controls */}
                     {bgType === 'custom' && (
-                      <div className="p-3 bg-slate-50 rounded-xl space-y-3 border border-slate-200 animate-in fade-in slide-in-from-top-2 duration-200">
+                      <div className="p-3 bg-slate-50 dark:bg-[#333] rounded-xl space-y-3 border border-slate-200 dark:border-[#424242] animate-in fade-in slide-in-from-top-2 duration-200">
                         <div className="flex gap-2">
-                          <input type="color" value={customGradStart} onChange={e => setCustomGradStart(e.target.value)} className="h-8 w-full cursor-pointer rounded" />
-                          <input type="color" value={customGradEnd} onChange={e => setCustomGradEnd(e.target.value)} className="h-8 w-full cursor-pointer rounded" />
+                          <input type="color" value={customGradStart} onChange={e => setCustomGradStart(e.target.value)} className="h-8 w-full cursor-pointer rounded border-none" />
+                          <input type="color" value={customGradEnd} onChange={e => setCustomGradEnd(e.target.value)} className="h-8 w-full cursor-pointer rounded border-none" />
                         </div>
                         <select
                           value={customGradDir}
                           onChange={e => setCustomGradDir(e.target.value)}
-                          className="w-full text-xs p-2 rounded border border-slate-300 bg-white outline-none focus:border-indigo-500"
+                          className="w-full text-xs p-2 rounded border border-slate-300 dark:border-[#424242] bg-white dark:bg-[#2a2a2a] text-slate-700 dark:text-[#e0e0e0] outline-none focus:border-indigo-500"
                         >
                           <option value="to right">Horizontal</option>
                           <option value="to bottom">Vertical</option>
@@ -565,7 +648,7 @@ const App = () => {
                       <input type="file" ref={fileInputRef} onChange={handleImageUpload} accept="image/*" className="hidden" />
                       <button
                         onClick={() => fileInputRef.current.click()}
-                        className={`w-full py-2.5 text-xs font-bold uppercase tracking-wide rounded-xl border transition-all flex items-center justify-center gap-2 ${bgType === 'image' ? 'border-indigo-500 bg-indigo-50 text-indigo-700' : 'border-slate-200 hover:bg-slate-50 text-slate-500'}`}
+                        className={`w-full py-2.5 text-xs font-bold uppercase tracking-wide rounded-xl border transition-all flex items-center justify-center gap-2 ${bgType === 'image' ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400' : 'border-slate-200 dark:border-[#424242] hover:bg-slate-50 dark:hover:bg-[#333] text-slate-500 dark:text-[#9e9e9e]'}`}
                       >
                         <ImageIcon className="w-4 h-4" /> {bgImage ? 'Change Image' : 'Upload Image'}
                       </button>
@@ -600,15 +683,44 @@ const App = () => {
                           className={`
                         py-2 px-3 text-xs text-left rounded-lg transition-all border
                         ${font.name === f.name
-                              ? 'bg-white border-indigo-500 text-indigo-600 shadow-sm ring-1 ring-indigo-500/20'
-                              : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-white hover:border-slate-300'}
+                              ? 'bg-white dark:bg-[#333] border-indigo-500 text-indigo-600 dark:text-indigo-400 shadow-sm ring-1 ring-indigo-500/20'
+                              : 'bg-slate-50 dark:bg-[#2a2a2a] border-slate-200 dark:border-[#424242] text-slate-600 dark:text-[#9e9e9e] hover:bg-white dark:hover:bg-[#333] hover:border-slate-300 dark:hover:border-[#616161]'}
                       `}
-                          style={{ fontFamily: f.name }}
+                          style={{ fontFamily: f.name === 'Custom' ? 'inherit' : f.name }}
                         >
                           <div className="font-bold">{f.name}</div>
                           <div className="text-[10px] opacity-60 font-sans">{f.label}</div>
                         </button>
                       ))}
+                    </div>
+
+                    {/* Custom Font Input */}
+                    {font.name === 'Custom' && (
+                      <div className="animate-in fade-in slide-in-from-top-2 duration-200">
+                        <input
+                          type="text"
+                          value={customFontName}
+                          onChange={(e) => setCustomFontName(e.target.value)}
+                          placeholder="Enter Google Font Name (e.g. Lobster)"
+                          className="w-full text-xs p-2.5 rounded-lg border border-slate-300 dark:border-[#424242] bg-white dark:bg-[#2a2a2a] text-slate-700 dark:text-[#e0e0e0] outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                        />
+                        <div className="text-[10px] text-slate-400 mt-1 ml-1">
+                          Make sure the name matches Google Fonts exactly.
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Font Size Slider */}
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-xs text-slate-500 dark:text-[#9e9e9e] font-medium">
+                        <span>Font Size</span>
+                        <span>{fontSize}px</span>
+                      </div>
+                      <input
+                        type="range" min="12" max="32" value={fontSize}
+                        onChange={(e) => setFontSize(Number(e.target.value))}
+                        className="w-full h-1.5 bg-slate-200 dark:bg-[#424242] rounded-lg appearance-none cursor-pointer accent-indigo-600 hover:accent-indigo-500"
+                      />
                     </div>
 
                     {/* Text Color Presets */}
@@ -619,7 +731,7 @@ const App = () => {
                           <button
                             key={color.name}
                             onClick={() => { setTextColor(color.value); setThemeMode(color.value === '#ffffff' || color.value === '#f1f5f9' || color.value === '#fefce8' ? 'dark' : 'light'); }}
-                            className={`w-full aspect-square rounded-lg border shadow-sm transition-all hover:scale-110 ${textColor === color.value ? 'ring-2 ring-indigo-500 ring-offset-1 scale-110' : 'border-slate-200'}`}
+                            className={`w-full aspect-square rounded-lg border shadow-sm transition-all hover:scale-110 ${textColor === color.value ? 'ring-2 ring-indigo-500 ring-offset-1 scale-110' : 'border-slate-200 dark:border-[#424242]'}`}
                             style={{ backgroundColor: color.value }}
                             title={color.name}
                           />
@@ -632,7 +744,7 @@ const App = () => {
                             className="absolute inset-0 opacity-0 w-full h-full cursor-pointer z-10"
                             title="Custom Color"
                           />
-                          <div className="w-full h-full rounded-lg border border-dashed border-slate-300 flex items-center justify-center bg-white group-hover:bg-slate-50 transition-colors">
+                          <div className="w-full h-full rounded-lg border border-dashed border-slate-300 dark:border-[#424242] flex items-center justify-center bg-white dark:bg-[#333] group-hover:bg-slate-50 dark:group-hover:bg-[#424242] transition-colors">
                             <Palette className="w-3 h-3 text-slate-400" />
                           </div>
                         </div>
@@ -659,7 +771,7 @@ const App = () => {
                         <input
                           type="range" min={control.min} max={control.max} value={control.val}
                           onChange={(e) => control.set(Number(e.target.value))}
-                          className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-600 hover:accent-indigo-500"
+                          className="w-full h-1.5 bg-slate-200 dark:bg-[#424242] rounded-lg appearance-none cursor-pointer accent-indigo-600 hover:accent-indigo-500"
                         />
                       </div>
                     ))}
@@ -670,7 +782,7 @@ const App = () => {
           </div>
 
           {/* --- Preview Stage --- */}
-          <div className="flex-1 bg-slate-100 relative overflow-hidden flex items-center justify-center p-4 md:p-8 select-none">
+          <div className="flex-1 bg-slate-100 dark:bg-[#212121] relative overflow-hidden flex items-center justify-center p-4 md:p-8 select-none transition-colors duration-300">
 
             {/* Subtle Grid Pattern */}
             <div className="absolute inset-0 opacity-[0.04] pointer-events-none" style={{
@@ -720,7 +832,8 @@ const App = () => {
                 style={{
                   width: '100%',
                   flexGrow: 1,
-                  fontFamily: font.name,
+                  fontFamily: font.name === 'Custom' && customFontName ? customFontName : font.name,
+                  fontSize: `${fontSize}px`,
                   padding: `${padding}px`,
                   borderRadius: `${borderRadius}px`,
                   boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
