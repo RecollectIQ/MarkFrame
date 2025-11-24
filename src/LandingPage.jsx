@@ -3,7 +3,9 @@ import Particles from "react-tsparticles";
 import { loadSlim } from "tsparticles-slim";
 import { Tilt } from 'react-tilt';
 
-const LandingPage = ({ onEnter }) => {
+import { Moon, Sun, Monitor } from 'lucide-react';
+
+const LandingPage = ({ onEnter, uiTheme, setUiTheme }) => {
     const particlesInit = useCallback(async engine => {
         await loadSlim(engine);
     }, []);
@@ -20,8 +22,10 @@ const LandingPage = ({ onEnter }) => {
         easing: "cubic-bezier(.03,.98,.52,.99)",    // Easing on enter/exit.
     };
 
+    const isDark = uiTheme === 'dark' || (uiTheme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+
     return (
-        <div className="relative w-full h-screen flex flex-col items-center justify-center overflow-hidden bg-slate-50">
+        <div className={`relative w-full h-screen flex flex-col items-center justify-center overflow-hidden transition-colors duration-300 ${isDark ? 'bg-[#212121]' : 'bg-slate-50'}`}>
             <Particles
                 id="tsparticles"
                 init={particlesInit}
@@ -56,10 +60,10 @@ const LandingPage = ({ onEnter }) => {
                     },
                     particles: {
                         color: {
-                            value: "#1e293b", // Dark slate color
+                            value: isDark ? "#ffffff" : "#1e293b", // White in dark mode, Dark slate in light
                         },
                         links: {
-                            color: "#1e293b",
+                            color: isDark ? "#ffffff" : "#1e293b",
                             distance: 150,
                             enable: true,
                             opacity: 0.2,
@@ -97,27 +101,37 @@ const LandingPage = ({ onEnter }) => {
                 className="absolute inset-0 z-0"
             />
 
+            <div className="absolute top-6 right-6 z-50">
+                <button
+                    onClick={() => setUiTheme(prev => prev === 'light' ? 'dark' : prev === 'dark' ? 'system' : 'light')}
+                    className="p-3 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-slate-700 dark:text-slate-200 hover:bg-white/20 transition-all shadow-lg"
+                    title={`Theme: ${uiTheme}`}
+                >
+                    {uiTheme === 'light' ? <Sun className="w-6 h-6" /> : uiTheme === 'dark' ? <Moon className="w-6 h-6" /> : <Monitor className="w-6 h-6" />}
+                </button>
+            </div>
+
             <div className="z-10 flex flex-col items-center gap-8">
                 <Tilt options={defaultOptions} className="cursor-pointer" >
                     <div onClick={onEnter} className="flex flex-col items-center">
                         <div
                             className="w-48 h-48 md:w-64 md:h-64 drop-shadow-2xl opacity-90"
                             style={{
-                                backgroundColor: '#475568',
+                                backgroundColor: isDark ? '#ffffff' : '#475568',
                                 maskImage: 'url(/logo-new.png)',
                                 maskSize: 'contain',
                                 maskRepeat: 'no-repeat',
                                 maskPosition: 'center',
-                                WebkitMaskImage: 'url(/logo-new.png)',
+                                WebkitMaskImage: uiTheme === 'dark' || (uiTheme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'url(/logo-dark.png)' : 'url(/logo-new.png)',
                                 WebkitMaskSize: 'contain',
                                 WebkitMaskRepeat: 'no-repeat',
                                 WebkitMaskPosition: 'center'
                             }}
                         />
-                        <h1 className="mt-8 text-6xl md:text-8xl font-black tracking-[0.2em] uppercase select-none" style={{ color: '#475568' }}>
+                        <h1 className={`mt-8 text-6xl md:text-8xl font-black tracking-[0.2em] uppercase select-none transition-colors duration-300 ${isDark ? 'text-white' : 'text-[#475568]'}`}>
                             MarkFrame
                         </h1>
-                        <p className="mt-4 text-xl font-medium tracking-[0.3em] uppercase" style={{ color: '#94a3b8' }}>
+                        <p className={`mt-4 text-xl font-medium tracking-[0.3em] uppercase transition-colors duration-300 ${isDark ? 'text-gray-400' : 'text-[#94a3b8]'}`}>
                             Click to Enter
                         </p>
                     </div>
