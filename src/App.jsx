@@ -49,7 +49,6 @@ const PRESET_GRADIENTS = [
   { name: 'Oceanic', value: 'linear-gradient(225deg, #60a5fa 0%, #5eead4 50%, #34d399 100%)' },
   { name: 'Midnight', value: 'linear-gradient(135deg, #0f172a 0%, #3b0764 50%, #0f172a 100%)' },
   { name: 'Deep Space', value: 'linear-gradient(to top, #09203f 0%, #537895 100%)' },
-  { name: 'Clean', value: 'linear-gradient(to bottom, #f9fafb, #f3f4f6)' },
 ];
 
 const DEFAULT_MARKDOWN = `# The Glass Effect
@@ -607,7 +606,7 @@ const App = () => {
 
             {/* Tabs */}
             <div className="flex p-2 mx-4 mt-2 md:mt-4 bg-slate-100 dark:bg-[#212121] rounded-xl transition-colors duration-300">
-              {['edit', 'style'].map(tab => (
+              {['edit', 'text', 'canvas'].map(tab => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
@@ -637,73 +636,8 @@ const App = () => {
                 </div>
               )}
 
-              {activeTab === 'style' && (
+              {activeTab === 'text' && (
                 <div className="space-y-8 pb-12">
-                  <div className="space-y-4">
-                    <label className="section-label">Background</label>
-                    <div className="grid grid-cols-4 gap-2">
-                      {PRESET_GRADIENTS.map((g) => (
-                        <button
-                          key={g.name}
-                          onClick={() => { setSelectedGradient(g); setBgType('gradient'); }}
-                          className={`aspect-square rounded-xl ring-offset-2 transition-all ${bgType === 'gradient' && selectedGradient.name === g.name ? 'ring-2 ring-indigo-500 scale-105 shadow-lg' : 'hover:scale-105 shadow-sm'}`}
-                          style={{ background: g.value }}
-                          title={g.name}
-                        />
-                      ))}
-                      <button
-                        onClick={() => setBgType('custom')}
-                        className={`aspect-square rounded-xl ring-offset-2 flex items-center justify-center bg-slate-100 dark:bg-[#333] border-2 border-dashed border-slate-300 dark:border-[#424242] transition-all ${bgType === 'custom' ? 'ring-2 ring-indigo-500 scale-105 border-solid border-transparent bg-white dark:bg-[#424242]' : 'hover:scale-105 hover:bg-slate-200 dark:hover:bg-[#424242]'}`}
-                        title="Custom Gradient"
-                      >
-                        <Palette className="w-4 h-4 text-slate-500 dark:text-[#9e9e9e]" />
-                      </button>
-                    </div>
-
-                    {bgType === 'custom' && (
-                      <div className="p-3 bg-slate-50 dark:bg-[#333] rounded-xl space-y-3 border border-slate-200 dark:border-[#424242] animate-in fade-in slide-in-from-top-2 duration-200">
-                        <div className="flex gap-2">
-                          <input type="color" value={customGradStart} onChange={e => setCustomGradStart(e.target.value)} className="h-8 w-full cursor-pointer rounded border-none" />
-                          <input type="color" value={customGradEnd} onChange={e => setCustomGradEnd(e.target.value)} className="h-8 w-full cursor-pointer rounded border-none" />
-                        </div>
-                        <select
-                          value={customGradDir}
-                          onChange={e => setCustomGradDir(e.target.value)}
-                          className="w-full text-xs p-2 rounded border border-slate-300 dark:border-[#424242] bg-white dark:bg-[#2a2a2a] text-slate-700 dark:text-[#e0e0e0] outline-none focus:border-indigo-500"
-                        >
-                          <option value="to right">Horizontal</option>
-                          <option value="to bottom">Vertical</option>
-                          <option value="135deg">Diagonal</option>
-                          <option value="45deg">Reverse Diagonal</option>
-                        </select>
-                      </div>
-                    )}
-
-                    <div className="space-y-3">
-                      <input type="file" ref={fileInputRef} onChange={handleImageUpload} accept="image/*" className="hidden" />
-                      <button
-                        onClick={() => fileInputRef.current.click()}
-                        className={`w-full py-2.5 text-xs font-bold uppercase tracking-wide rounded-xl border transition-all flex items-center justify-center gap-2 ${bgType === 'image' ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400' : 'border-slate-200 dark:border-[#424242] hover:bg-slate-50 dark:hover:bg-[#333] text-slate-500 dark:text-[#9e9e9e]'}`}
-                      >
-                        <ImageIcon className="w-4 h-4" /> {bgImage ? 'Change Image' : 'Upload Image'}
-                      </button>
-
-                      {bgType === 'image' && (
-                        <div className="space-y-2 pt-1">
-                          <div className="flex justify-between text-xs text-slate-500 font-medium">
-                            <span>Brightness</span>
-                            <span>{bgBrightness}%</span>
-                          </div>
-                          <input
-                            type="range" min="0" max="200" value={bgBrightness}
-                            onChange={(e) => setBgBrightness(e.target.value)}
-                            className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-600"
-                          />
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
                   <div className="space-y-4">
                     <label className="section-label">Typography</label>
                     <div className="grid grid-cols-2 gap-2">
@@ -776,6 +710,75 @@ const App = () => {
                       </div>
                     </div>
                   </div>
+                </div>
+              )}
+
+              {activeTab === 'canvas' && (
+                <div className="space-y-8 pb-12">
+                  <div className="space-y-4">
+                    <label className="section-label">Background</label>
+                    <div className="grid grid-cols-4 gap-2">
+                      {PRESET_GRADIENTS.map((g) => (
+                        <button
+                          key={g.name}
+                          onClick={() => { setSelectedGradient(g); setBgType('gradient'); }}
+                          className={`aspect-square rounded-xl ring-offset-2 transition-all ${bgType === 'gradient' && selectedGradient.name === g.name ? 'ring-2 ring-indigo-500 scale-105 shadow-lg' : 'hover:scale-105 shadow-sm'}`}
+                          style={{ background: g.value }}
+                          title={g.name}
+                        />
+                      ))}
+                      <button
+                        onClick={() => setBgType('custom')}
+                        className={`aspect-square rounded-xl ring-offset-2 flex items-center justify-center bg-slate-100 dark:bg-[#333] border-2 border-dashed border-slate-300 dark:border-[#424242] transition-all ${bgType === 'custom' ? 'ring-2 ring-indigo-500 scale-105 border-solid border-transparent bg-white dark:bg-[#424242]' : 'hover:scale-105 hover:bg-slate-200 dark:hover:bg-[#424242]'}`}
+                        title="Custom Gradient"
+                      >
+                        <Palette className="w-4 h-4 text-slate-500 dark:text-[#9e9e9e]" />
+                      </button>
+                    </div>
+
+                    {bgType === 'custom' && (
+                      <div className="p-3 bg-slate-50 dark:bg-[#333] rounded-xl space-y-3 border border-slate-200 dark:border-[#424242] animate-in fade-in slide-in-from-top-2 duration-200">
+                        <div className="flex gap-2">
+                          <input type="color" value={customGradStart} onChange={e => setCustomGradStart(e.target.value)} className="h-8 w-full cursor-pointer rounded border-none" />
+                          <input type="color" value={customGradEnd} onChange={e => setCustomGradEnd(e.target.value)} className="h-8 w-full cursor-pointer rounded border-none" />
+                        </div>
+                        <select
+                          value={customGradDir}
+                          onChange={e => setCustomGradDir(e.target.value)}
+                          className="w-full text-xs p-2 rounded border border-slate-300 dark:border-[#424242] bg-white dark:bg-[#2a2a2a] text-slate-700 dark:text-[#e0e0e0] outline-none focus:border-indigo-500"
+                        >
+                          <option value="to right">Horizontal</option>
+                          <option value="to bottom">Vertical</option>
+                          <option value="135deg">Diagonal</option>
+                          <option value="45deg">Reverse Diagonal</option>
+                        </select>
+                      </div>
+                    )}
+
+                    <div className="space-y-3">
+                      <input type="file" ref={fileInputRef} onChange={handleImageUpload} accept="image/*" className="hidden" />
+                      <button
+                        onClick={() => fileInputRef.current.click()}
+                        className={`w-full py-2.5 text-xs font-bold uppercase tracking-wide rounded-xl border transition-all flex items-center justify-center gap-2 ${bgType === 'image' ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400' : 'border-slate-200 dark:border-[#424242] hover:bg-slate-50 dark:hover:bg-[#333] text-slate-500 dark:text-[#9e9e9e]'}`}
+                      >
+                        <ImageIcon className="w-4 h-4" /> {bgImage ? 'Change Image' : 'Upload Image'}
+                      </button>
+
+                      {bgType === 'image' && (
+                        <div className="space-y-2 pt-1">
+                          <div className="flex justify-between text-xs text-slate-500 font-medium">
+                            <span>Brightness</span>
+                            <span>{bgBrightness}%</span>
+                          </div>
+                          <input
+                            type="range" min="0" max="200" value={bgBrightness}
+                            onChange={(e) => setBgBrightness(e.target.value)}
+                            className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-600"
+                          />
+                        </div>
+                      )}
+                    </div>
+                  </div>
 
                   <div className="space-y-6">
                     <label className="section-label">Canvas & Geometry</label>
@@ -800,6 +803,7 @@ const App = () => {
                   </div>
                 </div>
               )}
+
             </div>
           </div>
 
