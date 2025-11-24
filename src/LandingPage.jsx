@@ -115,7 +115,7 @@ const LandingPage = ({ onEnter, uiTheme, setUiTheme }) => {
                 <Tilt options={defaultOptions} className="cursor-pointer" >
                     <div onClick={onEnter} className="flex flex-col items-center">
                         <div
-                            className="w-48 h-48 md:w-64 md:h-64 drop-shadow-2xl opacity-90"
+                            className="w-32 h-32 md:w-64 md:h-64 drop-shadow-2xl opacity-90"
                             style={{
                                 backgroundColor: isDark ? '#ffffff' : '#475568',
                                 maskImage: 'url(/logo-new.png)',
@@ -128,10 +128,11 @@ const LandingPage = ({ onEnter, uiTheme, setUiTheme }) => {
                                 WebkitMaskPosition: 'center'
                             }}
                         />
-                        <h1 className={`mt-8 text-6xl md:text-8xl font-black tracking-[0.2em] uppercase select-none transition-colors duration-300 ${isDark ? 'text-white' : 'text-[#475568]'}`}>
+                        {/* Adjusted text sizes for mobile */}
+                        <h1 className={`mt-8 text-4xl md:text-8xl font-black tracking-[0.2em] uppercase select-none transition-colors duration-300 ${isDark ? 'text-white' : 'text-[#475568]'}`}>
                             MarkFrame
                         </h1>
-                        <p className={`mt-4 text-xl font-medium tracking-[0.3em] uppercase transition-colors duration-300 ${isDark ? 'text-gray-400' : 'text-[#94a3b8]'}`}>
+                        <p className={`mt-4 text-sm md:text-xl font-medium tracking-[0.3em] uppercase transition-colors duration-300 ${isDark ? 'text-gray-400' : 'text-[#94a3b8]'}`}>
                             Click to Enter
                         </p>
                     </div>

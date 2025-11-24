@@ -113,9 +113,6 @@ const useStyle = (href, id) => {
 
 // --- Main Component ---
 
-
-
-
 const App = () => {
   // --- State ---
   const [showLanding, setShowLanding] = useState(true);
@@ -124,7 +121,7 @@ const App = () => {
 
   // Style State
   const [bgType, setBgType] = useState('gradient');
-  const [selectedGradient, setSelectedGradient] = useState(PRESET_GRADIENTS[0]); // Apple Mesh default for better blur visibility
+  const [selectedGradient, setSelectedGradient] = useState(PRESET_GRADIENTS[0]); 
   const [customGradStart, setCustomGradStart] = useState('#6366f1');
   const [customGradEnd, setCustomGradEnd] = useState('#a855f7');
   const [customGradDir, setCustomGradDir] = useState('135deg');
@@ -136,18 +133,25 @@ const App = () => {
   const [customFontName, setCustomFontName] = useState('');
   const [fontSize, setFontSize] = useState(16);
   const [textColor, setTextColor] = useState('#1e293b');
-  const [themeMode, setThemeMode] = useState('light'); // This is for the card theme
-  const [uiTheme, setUiTheme] = useState('system'); // 'light', 'dark', 'system'
+  const [themeMode, setThemeMode] = useState('light'); 
+  const [uiTheme, setUiTheme] = useState('system'); 
 
   // Glass Properties
   const [blur, setBlur] = useState(40);
-  const [opacity, setOpacity] = useState(60); // Lower opacity = more visible blur
+  const [opacity, setOpacity] = useState(60); 
   const [padding, setPadding] = useState(64);
   const [borderRadius, setBorderRadius] = useState(24);
   const [canvasSize, setCanvasSize] = useState({ width: 800, height: 600 });
   const [isResizing, setIsResizing] = useState(false);
-  const [sidebarWidth, setSidebarWidth] = useState(520); // Default wider based on user feedback
+  const [sidebarWidth, setSidebarWidth] = useState(520); 
   const [isSidebarResizing, setIsSidebarResizing] = useState(false);
+
+  // Responsive State
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  
+  // Scaling
+  const [previewScale, setPreviewScale] = useState(1);
+  const containerRef = useRef(null);
 
   const [isExporting, setIsExporting] = useState(false);
   const [isCopying, setIsCopying] = useState(false);
@@ -160,10 +164,8 @@ const App = () => {
 
   // --- Load Libraries ---
   const markedStatus = useScript('https://cdn.jsdelivr.net/npm/marked/marked.min.js');
-  // KaTeX loaded via import now
   const highlightStatus = useScript('https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js');
 
-  // Dynamic Code Theme
   const codeThemeUrl = useMemo(() => {
     return themeMode === 'dark'
       ? 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/tokyo-night-dark.min.css'
@@ -195,7 +197,6 @@ const App = () => {
         link.rel = 'stylesheet';
         document.head.appendChild(link);
       }
-      // Basic Google Fonts URL construction
       const formattedName = customFontName.trim().split(' ').join('+');
       link.href = `https://fonts.googleapis.com/css2?family=${formattedName}:wght@400;700&display=swap`;
     }
@@ -214,6 +215,36 @@ const App = () => {
     }
   }, [uiTheme]);
 
+  // Handle Mobile Check & Calculate Scale
+  useEffect(() => {
+    const handleResize = () => {
+      const mobile = window.innerWidth < 768;
+      setIsMobile(mobile);
+      
+      if (containerRef.current) {
+        const containerWidth = containerRef.current.clientWidth;
+        // Padding adjustment
+        const availableWidth = containerWidth - (mobile ? 32 : 64);
+        const requiredWidth = canvasSize.width;
+        
+        if (requiredWidth > availableWidth) {
+           setPreviewScale(availableWidth / requiredWidth);
+        } else {
+           setPreviewScale(1);
+        }
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    handleResize();
+    const timer = setTimeout(handleResize, 100);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      clearTimeout(timer);
+    };
+  }, [canvasSize.width, sidebarWidth, showLanding]);
+
   // --- Markdown Processing ---
 
   useEffect(() => {
@@ -223,7 +254,6 @@ const App = () => {
         breaks: true,
       });
 
-      // --- MATH SHIELDING ---
       const mathBlocks = [];
       let protectedText = markdown.replace(/\$\$([\s\S]*?)\$\$/g, (match) => {
         mathBlocks.push(match);
@@ -251,7 +281,6 @@ const App = () => {
     if (!contentRef.current) return;
 
     const renderExtras = () => {
-      // Render Math using imported function
       try {
         renderMathInElement(contentRef.current, {
           delimiters: [
@@ -282,36 +311,6 @@ const App = () => {
   // --- Resize Handlers ---
 
   useEffect(() => {
-    const handleMouseMove = (e) => {
-      if (!isResizing) return;
-
-      // Calculate new size based on mouse position relative to the preview container
-      // We need to find the preview container's bounds
-      // Since the resize handle is inside the previewRef, we can use that
-      if (previewRef.current) {
-        const rect = previewRef.current.getBoundingClientRect();
-        // We want the bottom-right corner to follow the mouse
-        // But we need to account for the fact that the mouse might be outside the container
-        // The new width is the mouse X minus the container's left position
-        // The new height is the mouse Y minus the container's top position
-
-        // However, since we are centered, it might be tricky. 
-        // Let's assume the resize handle is at the bottom right of the element itself.
-        // A simpler way:
-        // New Width = Current Width + Mouse Delta X
-        // But we don't have delta easily without previous position.
-
-        // Better approach:
-        // The element top-left is fixed relative to the viewport during resize? 
-        // No, it's centered. This makes resizing tricky if we just use mouse position.
-        // If it's centered, increasing width moves both left and right edges.
-
-        // Let's try a simpler approach:
-        // Just use the mouse movement to add to width/height.
-        // We need to track previous mouse position.
-      }
-    };
-
     const handleMouseUp = () => {
       setIsResizing(false);
     };
@@ -334,7 +333,6 @@ const App = () => {
     };
   }, [isResizing, isSidebarResizing]);
 
-  // We need a ref to store the start position of the mouse and the start size
   const resizeStartRef = useRef({ x: 0, y: 0, w: 0, h: 0 });
 
   const handleResizeStart = (e) => {
@@ -351,9 +349,8 @@ const App = () => {
 
   const handleWindowMouseMove = (e) => {
     if (!isResizing) return;
-
-    const dx = (e.clientX - resizeStartRef.current.x) * 2; // Multiply by 2 because it's centered
-    const dy = (e.clientY - resizeStartRef.current.y) * 2;
+    const dx = (e.clientX - resizeStartRef.current.x) * 2 / previewScale;
+    const dy = (e.clientY - resizeStartRef.current.y) * 2 / previewScale;
 
     setCanvasSize({
       width: Math.max(300, resizeStartRef.current.w + dx),
@@ -361,7 +358,6 @@ const App = () => {
     });
   };
 
-  // Sidebar Resize
   const sidebarResizeStartRef = useRef({ x: 0, w: 0 });
 
   const handleSidebarResizeStart = (e) => {
@@ -394,7 +390,6 @@ const App = () => {
         setBgType('image');
       };
       reader.readAsDataURL(file);
-      // Reset the input so the same file can be selected again if needed
       e.target.value = '';
     }
   };
@@ -403,10 +398,8 @@ const App = () => {
     if (!previewRef.current) return;
     setIsExporting(true);
 
-    // We need to wait a moment to ensure the spinner state renders before blocking thread
     setTimeout(async () => {
       try {
-        // Scale up for retina display simulation
         const scale = 3;
         const node = previewRef.current;
         const exportOptions = {
@@ -414,13 +407,12 @@ const App = () => {
           cacheBust: true,
           pixelRatio: scale,
           style: {
-            transform: 'none', // html-to-image handles scaling via pixelRatio better usually, or we just let it capture as is
+            transform: 'none', 
+            maxWidth: 'none',  
           }
         };
 
-        // html-to-image handles fonts better
         const dataUrl = await toPng(node, exportOptions);
-
         const link = document.createElement('a');
         link.download = `markframe-${Date.now()}.png`;
         link.href = dataUrl;
@@ -440,12 +432,16 @@ const App = () => {
 
     setTimeout(async () => {
       try {
-        const scale = 2; // Slightly lower scale for clipboard to ensure performance
+        const scale = 2; 
         const node = previewRef.current;
         const exportOptions = {
           quality: 0.95,
           cacheBust: true,
           pixelRatio: scale,
+          style: {
+             transform: 'none', 
+             maxWidth: 'none',
+          }
         };
 
         const blob = await toBlob(node, exportOptions);
@@ -479,7 +475,6 @@ const App = () => {
 
   const parsedHtmlMemo = useMemo(() => ({ __html: parsedHtml }), [parsedHtml]);
 
-  // Shared styles for preview/export so blur works in screenshots (backdrop-filter isn't captured)
   const backgroundStyle = useMemo(() => ({
     ...getBackgroundStyle(),
     backgroundSize: 'cover',
@@ -510,30 +505,27 @@ const App = () => {
       {showLanding ? (
         <LandingPage onEnter={() => setShowLanding(false)} uiTheme={uiTheme} setUiTheme={setUiTheme} />
       ) : (
-        <div className="min-h-screen bg-slate-50 dark:bg-[#212121] text-slate-800 dark:text-[#e0e0e0] font-sans overflow-hidden flex flex-col md:flex-row transition-colors duration-300">
+        <div className="min-h-screen bg-slate-50 dark:bg-[#212121] text-slate-800 dark:text-[#e0e0e0] font-sans overflow-hidden flex flex-col-reverse md:flex-row transition-colors duration-300">
 
           {/* --- Sidebar --- */}
           <div
-            className="relative bg-white dark:bg-[#2a2a2a] border-r border-slate-200 dark:border-[#424242] flex flex-col h-[45vh] md:h-auto md:min-h-screen z-10 shadow-xl transition-colors duration-300 flex-shrink-0"
-            style={{ width: `${sidebarWidth}px` }}
+            className="relative bg-white dark:bg-[#2a2a2a] border-r border-slate-200 dark:border-[#424242] flex flex-col h-[60vh] md:h-auto md:min-h-screen z-10 shadow-xl transition-colors duration-300 flex-shrink-0"
+            style={{ width: isMobile ? '100%' : `${sidebarWidth}px` }}
           >
-            {/* Sidebar Resize Handle */}
             <div
-              className="absolute top-0 right-0 w-1 h-full cursor-col-resize hover:bg-indigo-500/50 z-50 transition-colors"
+              className="hidden md:block absolute top-0 right-0 w-1 h-full cursor-col-resize hover:bg-indigo-500/50 z-50 transition-colors"
               onMouseDown={handleSidebarResizeStart}
             />
 
-            {/* Header */}
-            <div className="p-5 border-b border-slate-100 dark:border-[#424242] flex items-center justify-between bg-white dark:bg-[#2a2a2a] sticky top-0 z-20 transition-colors duration-300">
+            <div className="p-3 md:p-5 border-b border-slate-100 dark:border-[#424242] flex items-center justify-between bg-white dark:bg-[#2a2a2a] sticky top-0 z-20 transition-colors duration-300">
               <div className="flex items-center gap-2">
-                <img src={uiTheme === 'dark' || (uiTheme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches) ? "/logo-dark.png" : "/logo-new.png"} alt="Logo" className="h-8 w-auto object-contain" />
-                <span className="font-bold text-lg text-slate-900 dark:text-white tracking-[0.2em] uppercase">MarkFrame</span>
+                <img src={uiTheme === 'dark' || (uiTheme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches) ? "/logo-dark.png" : "/logo-new.png"} alt="Logo" className="h-6 md:h-8 w-auto object-contain" />
+                <span className="font-bold text-base md:text-lg text-slate-900 dark:text-white tracking-[0.2em] uppercase">MarkFrame</span>
               </div>
               <div className="flex gap-2">
                 <button
                   onClick={() => setUiTheme(prev => prev === 'light' ? 'dark' : prev === 'dark' ? 'system' : 'light')}
                   className="p-2 rounded-lg transition-all shadow-md active:scale-95 bg-white dark:bg-[#333] text-slate-700 dark:text-[#e0e0e0] border border-slate-200 dark:border-[#424242] hover:bg-slate-50 dark:hover:bg-[#424242]"
-                  title={`Theme: ${uiTheme}`}
                 >
                   {uiTheme === 'light' ? <Sun className="w-4 h-4" /> : uiTheme === 'dark' ? <Moon className="w-4 h-4" /> : <Monitor className="w-4 h-4" />}
                 </button>
@@ -544,7 +536,6 @@ const App = () => {
                     p-2 rounded-lg transition-all shadow-md active:scale-95 disabled:opacity-50 flex items-center gap-2
                     ${copySuccess ? 'bg-green-500 text-white' : 'bg-white dark:bg-[#333] text-slate-700 dark:text-[#e0e0e0] border border-slate-200 dark:border-[#424242] hover:bg-slate-50 dark:hover:bg-[#424242]'}
                 `}
-                  title="Copy to Clipboard"
                 >
                   {isCopying ? (
                     <div className="w-4 h-4 border-2 border-slate-400 border-t-transparent rounded-full animate-spin" />
@@ -558,7 +549,6 @@ const App = () => {
                   onClick={handleExport}
                   disabled={isExporting || isCopying}
                   className="bg-slate-900 hover:bg-slate-800 text-white p-2 rounded-lg transition-all shadow-md active:scale-95 disabled:opacity-50 flex items-center gap-2"
-                  title="Export as PNG"
                 >
                   {isExporting ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Download className="w-4 h-4" />}
                   <span className="text-xs font-bold hidden md:inline">Export</span>
@@ -567,7 +557,7 @@ const App = () => {
             </div>
 
             {/* Tabs */}
-            <div className="flex p-2 mx-4 mt-4 bg-slate-100 dark:bg-[#212121] rounded-xl transition-colors duration-300">
+            <div className="flex p-2 mx-4 mt-2 md:mt-4 bg-slate-100 dark:bg-[#212121] rounded-xl transition-colors duration-300">
               {['edit', 'style'].map(tab => (
                 <button
                   key={tab}
@@ -580,7 +570,7 @@ const App = () => {
             </div>
 
             {/* Content Area */}
-            <div className="flex-1 overflow-y-auto p-6 space-y-8 custom-scrollbar">
+            <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-8 custom-scrollbar">
 
               {activeTab === 'edit' && (
                 <div className="space-y-4 h-full flex flex-col">
@@ -600,8 +590,6 @@ const App = () => {
 
               {activeTab === 'style' && (
                 <div className="space-y-8 pb-12">
-
-                  {/* Background Section */}
                   <div className="space-y-4">
                     <label className="section-label">Background</label>
                     <div className="grid grid-cols-4 gap-2">
@@ -623,7 +611,6 @@ const App = () => {
                       </button>
                     </div>
 
-                    {/* Custom Gradient Controls */}
                     {bgType === 'custom' && (
                       <div className="p-3 bg-slate-50 dark:bg-[#333] rounded-xl space-y-3 border border-slate-200 dark:border-[#424242] animate-in fade-in slide-in-from-top-2 duration-200">
                         <div className="flex gap-2">
@@ -643,7 +630,6 @@ const App = () => {
                       </div>
                     )}
 
-                    {/* Image Controls */}
                     <div className="space-y-3">
                       <input type="file" ref={fileInputRef} onChange={handleImageUpload} accept="image/*" className="hidden" />
                       <button
@@ -669,12 +655,8 @@ const App = () => {
                     </div>
                   </div>
 
-                  {/* Typography Section */}
                   <div className="space-y-4">
                     <label className="section-label">Typography</label>
-
-                    {/* Font Selection */}
-                    {/* Font Selection */}
                     <div className="grid grid-cols-2 gap-2">
                       {FONTS.map((f) => (
                         <button
@@ -694,7 +676,6 @@ const App = () => {
                       ))}
                     </div>
 
-                    {/* Custom Font Input */}
                     {font.name === 'Custom' && (
                       <div className="animate-in fade-in slide-in-from-top-2 duration-200">
                         <input
@@ -704,13 +685,9 @@ const App = () => {
                           placeholder="Enter Google Font Name (e.g. Lobster)"
                           className="w-full text-xs p-2.5 rounded-lg border border-slate-300 dark:border-[#424242] bg-white dark:bg-[#2a2a2a] text-slate-700 dark:text-[#e0e0e0] outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
                         />
-                        <div className="text-[10px] text-slate-400 mt-1 ml-1">
-                          Make sure the name matches Google Fonts exactly.
-                        </div>
                       </div>
                     )}
 
-                    {/* Font Size Slider */}
                     <div className="space-y-2">
                       <div className="flex justify-between text-xs text-slate-500 dark:text-[#9e9e9e] font-medium">
                         <span>Font Size</span>
@@ -723,7 +700,6 @@ const App = () => {
                       />
                     </div>
 
-                    {/* Text Color Presets */}
                     <div className="space-y-2">
                       <div className="text-xs text-slate-500 font-medium">Text Color</div>
                       <div className="grid grid-cols-5 gap-2">
@@ -752,11 +728,8 @@ const App = () => {
                     </div>
                   </div>
 
-                  {/* Canvas Properties */}
                   <div className="space-y-6">
                     <label className="section-label">Canvas & Geometry</label>
-
-
                     {[
                       { label: 'Blur', val: blur, set: setBlur, min: 0, max: 60, unit: 'px' },
                       { label: 'Opacity', val: opacity, set: setOpacity, min: 0, max: 100, unit: '%' },
@@ -782,120 +755,119 @@ const App = () => {
           </div>
 
           {/* --- Preview Stage --- */}
-          <div className="flex-1 bg-slate-100 dark:bg-[#212121] relative overflow-hidden flex items-center justify-center p-4 md:p-8 select-none transition-colors duration-300">
-
-            {/* Subtle Grid Pattern */}
+          <div 
+             ref={containerRef}
+             // FIXED: Using justify-center to vertically align the card, reducing bottom gap on mobile
+             className="flex-1 bg-slate-100 dark:bg-[#212121] relative overflow-hidden flex flex-col items-center justify-center p-4 md:p-8 select-none transition-colors duration-300 min-h-[40vh] md:min-h-0"
+          >
             <div className="absolute inset-0 opacity-[0.04] pointer-events-none" style={{
               backgroundImage: `linear-gradient(#6366f1 1.5px, transparent 1.5px), linear-gradient(90deg, #6366f1 1.5px, transparent 1.5px)`,
               backgroundSize: '24px 24px'
             }}></div>
 
-            {/* Rendered Output Container */}
-            <div
-              ref={previewRef}
-              className="relative shadow-2xl transition-all duration-75 ease-out overflow-hidden group flex flex-col items-center justify-center rounded-[36px] p-6 md:p-12"
-              style={{
-                ...backgroundStyle,
-                width: `${canvasSize.width}px`,
-                minHeight: `${canvasSize.height}px`,
-              }}
-            >
-              {/* Resize Handle (hidden while exporting/copying so it won't appear in captures) */}
-              {!(isExporting || isCopying) && (
-                <div
-                  className="absolute bottom-0 right-0 w-8 h-8 bg-white/25 hover:bg-white/40 backdrop-blur-md cursor-nwse-resize z-50 rounded-tl-xl transition-colors flex items-center justify-center group/handle"
-                  onMouseDown={handleResizeStart}
-                  title="Drag to resize canvas"
-                >
-                  <svg
-                    className="w-3 h-3 opacity-80 group-hover/handle:opacity-100 transition-opacity"
-                    viewBox="0 0 12 12"
-                    fill="none"
-                    stroke="white"
-                    strokeWidth="1.25"
-                    strokeLinecap="round"
-                  >
-                    <path d="M3 9L9 3" />
-                    <path d="M5.5 9L9 5.5" />
-                    <path d="M9 9L9 9" />
-                  </svg>
-                </div>
-              )}
-
-              {/* The Glass Card */}
-              <div
-                className={`
-                relative flex flex-col justify-start
-                transition-all duration-500 ease-out
-                z-10 w-full
-              `}
-                style={{
-                  width: '100%',
-                  flexGrow: 1,
-                  fontFamily: font.name === 'Custom' && customFontName ? `"${customFontName.trim()}"` : font.name,
-                  fontSize: `${fontSize}px`,
-                  padding: `${padding}px`,
-                  borderRadius: `${borderRadius}px`,
-                  boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
-                  border: themeMode === 'light'
-                    ? '1px solid rgba(255,255,255,0.6)'
-                    : '1px solid rgba(255,255,255,0.15)',
-                  color: textColor,
-                  minHeight: '100%',
-                  minWidth: 0,
-                  overflow: 'hidden',
-                  justifySelf: 'stretch',
-                  alignSelf: 'stretch'
-                }}
-              >
-                {/* Blur layer replicated inside card so exports capture the frosted effect */}
-                <div
-                  className="absolute inset-0 pointer-events-none"
-                  aria-hidden="true"
-                  style={{
-                    ...glassBlurStyle,
-                    borderRadius: `${borderRadius}px`,
-                    transform: 'scale(1.03)',
-                    transformOrigin: 'center'
-                  }}
-                />
-
-                {/* Tint layer to control glass opacity without relying on backdrop-filter */}
-                <div
-                  className="absolute inset-0 pointer-events-none"
-                  aria-hidden="true"
-                  style={{
-                    backgroundColor: glassTintColor,
-                    borderRadius: `${borderRadius}px`
-                  }}
-                />
-
-                {/* Mac Window Header */}
-                <div className="absolute top-6 left-6 flex items-center gap-2 z-20 opacity-80">
-                  <div className="w-3 h-3 rounded-full bg-[#ff5f56] shadow-sm border border-black/5" />
-                  <div className="w-3 h-3 rounded-full bg-[#ffbd2e] shadow-sm border border-black/5" />
-                  <div className="w-3 h-3 rounded-full bg-[#27c93f] shadow-sm border border-black/5" />
-                </div>
-
-                <div
-                  className="relative z-10 w-full h-full overflow-hidden custom-markdown"
-                  style={{ minHeight: 0, minWidth: 0 }}
-                >
+            {/* FIXED: Wrapper explicitly set to scaled dimensions to remove 'ghost' space */}
+            {/* Using m-auto for safe centering behavior in flex container */}
+            <div className="m-auto" style={{ 
+               width: canvasSize.width * previewScale,
+               height: canvasSize.height * previewScale,
+               position: 'relative',
+               overflow: 'hidden'
+            }}>
+                {/* Inner transform scaled from top-left to fit exactly into the wrapper */}
+                <div style={{
+                   transform: `scale(${previewScale})`,
+                   transformOrigin: 'top left',
+                   width: canvasSize.width,
+                   height: canvasSize.height
+                }}>
                   <div
-                    ref={contentRef}
-                    dangerouslySetInnerHTML={parsedHtmlMemo}
-                    className="break-words"
-                  />
-                </div>
+                    ref={previewRef}
+                    className="relative shadow-2xl transition-all duration-75 ease-out overflow-hidden group flex flex-col items-center justify-center rounded-[36px] p-6 md:p-12"
+                    style={{
+                      ...backgroundStyle,
+                      width: '100%',
+                      height: '100%',
+                    }}
+                  >
+                    {!(isExporting || isCopying) && !isMobile && (
+                      <div
+                        className="absolute bottom-0 right-0 w-8 h-8 bg-white/25 hover:bg-white/40 backdrop-blur-md cursor-nwse-resize z-50 rounded-tl-xl transition-colors flex items-center justify-center group/handle"
+                        onMouseDown={handleResizeStart}
+                      >
+                        <svg
+                          className="w-3 h-3 opacity-80 group-hover/handle:opacity-100 transition-opacity"
+                          viewBox="0 0 12 12"
+                          fill="none"
+                          stroke="white"
+                          strokeWidth="1.25"
+                          strokeLinecap="round"
+                        >
+                          <path d="M3 9L9 3" />
+                          <path d="M5.5 9L9 5.5" />
+                          <path d="M9 9L9 9" />
+                        </svg>
+                      </div>
+                    )}
 
-                {/* Watermark */}
-                <div
-                  className="pointer-events-none absolute bottom-6 right-8 text-[10px] font-bold opacity-40 tracking-[0.25em] uppercase z-10"
-                  style={{ color: textColor }}
-                >
-                  MarkFrame
+                    <div
+                      className="relative flex flex-col justify-start transition-all duration-500 ease-out z-10 w-full"
+                      style={{
+                        width: '100%',
+                        flexGrow: 1,
+                        fontFamily: font.name === 'Custom' && customFontName ? `"${customFontName.trim()}"` : font.name,
+                        fontSize: `${fontSize}px`,
+                        padding: `${padding}px`,
+                        borderRadius: `${borderRadius}px`,
+                        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+                        border: themeMode === 'light' ? '1px solid rgba(255,255,255,0.6)' : '1px solid rgba(255,255,255,0.15)',
+                        color: textColor,
+                        minHeight: '100%',
+                        minWidth: 0,
+                        overflow: 'hidden',
+                      }}
+                    >
+                      <div
+                        className="absolute inset-0 pointer-events-none"
+                        aria-hidden="true"
+                        style={{
+                          ...glassBlurStyle,
+                          borderRadius: `${borderRadius}px`,
+                          transform: 'scale(1.03)',
+                          transformOrigin: 'center'
+                        }}
+                      />
+                      <div
+                        className="absolute inset-0 pointer-events-none"
+                        aria-hidden="true"
+                        style={{
+                          backgroundColor: glassTintColor,
+                          borderRadius: `${borderRadius}px`
+                        }}
+                      />
+                      <div className="absolute top-6 left-6 flex items-center gap-2 z-20 opacity-80">
+                        <div className="w-3 h-3 rounded-full bg-[#ff5f56] shadow-sm border border-black/5" />
+                        <div className="w-3 h-3 rounded-full bg-[#ffbd2e] shadow-sm border border-black/5" />
+                        <div className="w-3 h-3 rounded-full bg-[#27c93f] shadow-sm border border-black/5" />
+                      </div>
+                      <div
+                        className="relative z-10 w-full h-full overflow-hidden custom-markdown"
+                        style={{ minHeight: 0, minWidth: 0 }}
+                      >
+                        <div
+                          ref={contentRef}
+                          dangerouslySetInnerHTML={parsedHtmlMemo}
+                          className="break-words"
+                        />
+                      </div>
+                      <div
+                        className="pointer-events-none absolute bottom-6 right-8 text-[10px] font-bold opacity-40 tracking-[0.25em] uppercase z-10"
+                        style={{ color: textColor }}
+                      >
+                        MarkFrame
+                      </div>
+                    </div>
+                  </div>
                 </div>
-              </div>
             </div>
           </div>
 
