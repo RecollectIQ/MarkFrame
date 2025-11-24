@@ -149,6 +149,9 @@ const App = () => {
   const [sidebarWidth, setSidebarWidth] = useState(520); // Default wider based on user feedback
   const [isSidebarResizing, setIsSidebarResizing] = useState(false);
 
+  // Responsive State
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
   const [isExporting, setIsExporting] = useState(false);
   const [isCopying, setIsCopying] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
@@ -213,6 +216,15 @@ const App = () => {
       root.classList.add(uiTheme);
     }
   }, [uiTheme]);
+
+  // Handle Mobile Check
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // --- Markdown Processing ---
 
@@ -282,36 +294,6 @@ const App = () => {
   // --- Resize Handlers ---
 
   useEffect(() => {
-    const handleMouseMove = (e) => {
-      if (!isResizing) return;
-
-      // Calculate new size based on mouse position relative to the preview container
-      // We need to find the preview container's bounds
-      // Since the resize handle is inside the previewRef, we can use that
-      if (previewRef.current) {
-        const rect = previewRef.current.getBoundingClientRect();
-        // We want the bottom-right corner to follow the mouse
-        // But we need to account for the fact that the mouse might be outside the container
-        // The new width is the mouse X minus the container's left position
-        // The new height is the mouse Y minus the container's top position
-
-        // However, since we are centered, it might be tricky. 
-        // Let's assume the resize handle is at the bottom right of the element itself.
-        // A simpler way:
-        // New Width = Current Width + Mouse Delta X
-        // But we don't have delta easily without previous position.
-
-        // Better approach:
-        // The element top-left is fixed relative to the viewport during resize? 
-        // No, it's centered. This makes resizing tricky if we just use mouse position.
-        // If it's centered, increasing width moves both left and right edges.
-
-        // Let's try a simpler approach:
-        // Just use the mouse movement to add to width/height.
-        // We need to track previous mouse position.
-      }
-    };
-
     const handleMouseUp = () => {
       setIsResizing(false);
     };
@@ -510,24 +492,26 @@ const App = () => {
       {showLanding ? (
         <LandingPage onEnter={() => setShowLanding(false)} uiTheme={uiTheme} setUiTheme={setUiTheme} />
       ) : (
-        <div className="min-h-screen bg-slate-50 dark:bg-[#212121] text-slate-800 dark:text-[#e0e0e0] font-sans overflow-hidden flex flex-col md:flex-row transition-colors duration-300">
+        // Changed: flex-col-reverse on mobile so Controls are at bottom, Preview at top
+        <div className="min-h-screen bg-slate-50 dark:bg-[#212121] text-slate-800 dark:text-[#e0e0e0] font-sans overflow-hidden flex flex-col-reverse md:flex-row transition-colors duration-300">
 
           {/* --- Sidebar --- */}
           <div
-            className="relative bg-white dark:bg-[#2a2a2a] border-r border-slate-200 dark:border-[#424242] flex flex-col h-[45vh] md:h-auto md:min-h-screen z-10 shadow-xl transition-colors duration-300 flex-shrink-0"
-            style={{ width: `${sidebarWidth}px` }}
+            className="relative bg-white dark:bg-[#2a2a2a] border-r border-slate-200 dark:border-[#424242] flex flex-col h-[50vh] md:h-auto md:min-h-screen z-10 shadow-xl transition-colors duration-300 flex-shrink-0"
+            // Changed: 100% width on mobile, specific width on desktop
+            style={{ width: isMobile ? '100%' : `${sidebarWidth}px` }}
           >
-            {/* Sidebar Resize Handle */}
+            {/* Sidebar Resize Handle (Hidden on mobile) */}
             <div
-              className="absolute top-0 right-0 w-1 h-full cursor-col-resize hover:bg-indigo-500/50 z-50 transition-colors"
+              className="hidden md:block absolute top-0 right-0 w-1 h-full cursor-col-resize hover:bg-indigo-500/50 z-50 transition-colors"
               onMouseDown={handleSidebarResizeStart}
             />
 
             {/* Header */}
-            <div className="p-5 border-b border-slate-100 dark:border-[#424242] flex items-center justify-between bg-white dark:bg-[#2a2a2a] sticky top-0 z-20 transition-colors duration-300">
+            <div className="p-3 md:p-5 border-b border-slate-100 dark:border-[#424242] flex items-center justify-between bg-white dark:bg-[#2a2a2a] sticky top-0 z-20 transition-colors duration-300">
               <div className="flex items-center gap-2">
-                <img src={uiTheme === 'dark' || (uiTheme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches) ? "/logo-dark.png" : "/logo-new.png"} alt="Logo" className="h-8 w-auto object-contain" />
-                <span className="font-bold text-lg text-slate-900 dark:text-white tracking-[0.2em] uppercase">MarkFrame</span>
+                <img src={uiTheme === 'dark' || (uiTheme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches) ? "/logo-dark.png" : "/logo-new.png"} alt="Logo" className="h-6 md:h-8 w-auto object-contain" />
+                <span className="font-bold text-base md:text-lg text-slate-900 dark:text-white tracking-[0.2em] uppercase">MarkFrame</span>
               </div>
               <div className="flex gap-2">
                 <button
@@ -567,7 +551,7 @@ const App = () => {
             </div>
 
             {/* Tabs */}
-            <div className="flex p-2 mx-4 mt-4 bg-slate-100 dark:bg-[#212121] rounded-xl transition-colors duration-300">
+            <div className="flex p-2 mx-4 mt-2 md:mt-4 bg-slate-100 dark:bg-[#212121] rounded-xl transition-colors duration-300">
               {['edit', 'style'].map(tab => (
                 <button
                   key={tab}
@@ -580,7 +564,7 @@ const App = () => {
             </div>
 
             {/* Content Area */}
-            <div className="flex-1 overflow-y-auto p-6 space-y-8 custom-scrollbar">
+            <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-8 custom-scrollbar">
 
               {activeTab === 'edit' && (
                 <div className="space-y-4 h-full flex flex-col">
@@ -782,7 +766,8 @@ const App = () => {
           </div>
 
           {/* --- Preview Stage --- */}
-          <div className="flex-1 bg-slate-100 dark:bg-[#212121] relative overflow-hidden flex items-center justify-center p-4 md:p-8 select-none transition-colors duration-300">
+          {/* Changed: Add overflow-x-auto to allow large cards to be scrolled on mobile without breaking layout */}
+        <div className="flex-1 bg-slate-100 dark:bg-[#212121] relative overflow-hidden overflow-x-auto flex flex-col items-center justify-start md:justify-center p-4 md:p-8 select-none transition-colors duration-300 min-h-[50vh] md:min-h-0">
 
             {/* Subtle Grid Pattern */}
             <div className="absolute inset-0 opacity-[0.04] pointer-events-none" style={{
@@ -797,11 +782,15 @@ const App = () => {
               style={{
                 ...backgroundStyle,
                 width: `${canvasSize.width}px`,
+                maxWidth: '100%',
                 minHeight: `${canvasSize.height}px`,
+                // Changed: Ensure it doesn't shrink weirdly on flex
+                flexShrink: 0 
               }}
             >
               {/* Resize Handle (hidden while exporting/copying so it won't appear in captures) */}
-              {!(isExporting || isCopying) && (
+              {/* Changed: Hide on mobile because touch resizing is bad UX */}
+              {!(isExporting || isCopying) && !isMobile && (
                 <div
                   className="absolute bottom-0 right-0 w-8 h-8 bg-white/25 hover:bg-white/40 backdrop-blur-md cursor-nwse-resize z-50 rounded-tl-xl transition-colors flex items-center justify-center group/handle"
                   onMouseDown={handleResizeStart}
