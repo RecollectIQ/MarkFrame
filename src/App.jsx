@@ -113,6 +113,20 @@ const useStyle = (href, id) => {
 
 // --- Main Component ---
 
+const getDefaultCanvasSize = () => {
+  if (typeof window === 'undefined') return { width: 800, height: 640 };
+
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+
+  const width = vw >= 1600 ? 980 : vw >= 1200 ? 900 : 800;
+  // Slightly lower default height on large screens to avoid looking too tall
+  const heightBase = vw >= 1600 ? 0.76 : vw >= 1200 ? 0.72 : 0.7;
+  const height = Math.max(560, Math.min(660, Math.round(vh * heightBase)));
+
+  return { width, height };
+};
+
 const App = () => {
   // --- State ---
   const [showLanding, setShowLanding] = useState(true);
@@ -141,7 +155,7 @@ const App = () => {
   const [opacity, setOpacity] = useState(60); 
   const [padding, setPadding] = useState(64);
   const [borderRadius, setBorderRadius] = useState(24);
-  const [canvasSize, setCanvasSize] = useState({ width: 800, height: 600 });
+  const [canvasSize, setCanvasSize] = useState(() => getDefaultCanvasSize());
   const [isResizing, setIsResizing] = useState(false);
   const [sidebarWidth, setSidebarWidth] = useState(520); 
   const [isSidebarResizing, setIsSidebarResizing] = useState(false);
@@ -335,21 +349,38 @@ const App = () => {
 
   // --- Auto Resize Height ---
   useLayoutEffect(() => {
-    if (contentRef.current) {
-      const contentHeight = contentRef.current.scrollHeight;
-      // Calculate total required height including padding and footer space
-      // padding * 2 covers top and bottom padding
-      // Plus some extra buffer for the footer (approx 60px safe area)
-      const requiredHeight = contentHeight + (padding * 2) + 40; 
-      
-      if (requiredHeight > canvasSize.height) {
-        setCanvasSize(prev => ({
-          ...prev,
-          height: requiredHeight
-        }));
-      }
-    }
-  }, [parsedHtml, padding, fontSize, font]);
+    if (!contentRef.current) return;
+
+    const node = contentRef.current;
+    const framePadding = isMobile ? 24 : 48; // matches p-6 / md:p-12 around the card
+    const chromeOffset = padding * 2 + framePadding * 2 + 40; // inner padding + outer frame + footer space
+
+    const updateHeight = () => {
+      const contentHeight = node.scrollHeight || 0;
+      const requiredHeight = Math.ceil(contentHeight + chromeOffset);
+
+      setCanvasSize(prev => {
+        if (isResizing) return prev; // don't fight manual resize in progress
+        if (requiredHeight <= prev.height) return prev;
+        return { ...prev, height: requiredHeight };
+      });
+    };
+
+    updateHeight();
+
+    // Run once more on the next paint & after fonts settle to capture late size changes
+    const rafId = requestAnimationFrame(updateHeight);
+    const timerId = setTimeout(updateHeight, 120);
+
+    const resizeObserver = new ResizeObserver(() => updateHeight());
+    resizeObserver.observe(node);
+
+    return () => {
+      resizeObserver.disconnect();
+      cancelAnimationFrame(rafId);
+      clearTimeout(timerId);
+    };
+  }, [parsedHtml, padding, fontSize, font, isResizing, isMobile]);
 
   const resizeStartRef = useRef({ x: 0, y: 0, w: 0, h: 0 });
 
@@ -523,11 +554,11 @@ const App = () => {
       {showLanding ? (
         <LandingPage onEnter={() => setShowLanding(false)} uiTheme={uiTheme} setUiTheme={setUiTheme} />
       ) : (
-        <div className="min-h-screen bg-slate-50 dark:bg-[#212121] text-slate-800 dark:text-[#e0e0e0] font-sans overflow-hidden flex flex-col-reverse md:flex-row transition-colors duration-300">
+        <div className="min-h-screen bg-slate-50 dark:bg-[#212121] text-slate-800 dark:text-[#e0e0e0] font-sans overflow-x-hidden flex flex-col-reverse md:flex-row transition-colors duration-300">
 
           {/* --- Sidebar --- */}
           <div
-            className="relative bg-white dark:bg-[#2a2a2a] border-r border-slate-200 dark:border-[#424242] flex flex-col h-[60vh] md:h-screen z-10 shadow-xl transition-colors duration-300 flex-shrink-0"
+            className="relative bg-white dark:bg-[#2a2a2a] border-r border-slate-200 dark:border-[#424242] flex flex-col min-h-[60vh] md:min-h-screen z-10 shadow-xl transition-colors duration-300 flex-shrink-0"
             style={{ width: isMobile ? '100%' : `${sidebarWidth}px` }}
           >
             <div
@@ -775,8 +806,8 @@ const App = () => {
           {/* --- Preview Stage --- */}
           <div 
              ref={containerRef}
-             // FIXED: Using justify-center to vertically align the card, reducing bottom gap on mobile
-             className="flex-1 bg-slate-100 dark:bg-[#212121] relative overflow-y-auto overflow-x-hidden flex flex-col items-center justify-center p-4 md:p-8 select-none transition-colors duration-300 min-h-[40vh] md:min-h-0"
+             // Use overflow-y-auto without vertical centering to avoid clipping taller cards
+             className="flex-1 bg-slate-100 dark:bg-[#212121] relative overflow-y-auto overflow-x-hidden flex flex-col p-4 md:p-8 select-none transition-colors duration-300 min-h-[40vh] md:min-h-0"
           >
             <div className="absolute inset-0 opacity-[0.04] pointer-events-none" style={{
               backgroundImage: `linear-gradient(#6366f1 1.5px, transparent 1.5px), linear-gradient(90deg, #6366f1 1.5px, transparent 1.5px)`,
