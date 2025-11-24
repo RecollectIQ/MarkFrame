@@ -196,7 +196,7 @@ const App = () => {
         document.head.appendChild(link);
       }
       // Basic Google Fonts URL construction
-      const formattedName = customFontName.split(' ').join('+');
+      const formattedName = customFontName.trim().split(' ').join('+');
       link.href = `https://fonts.googleapis.com/css2?family=${formattedName}:wght@400;700&display=swap`;
     }
   }, [font, customFontName]);
@@ -508,7 +508,7 @@ const App = () => {
   return (
     <>
       {showLanding ? (
-        <LandingPage onEnter={() => setShowLanding(false)} />
+        <LandingPage onEnter={() => setShowLanding(false)} uiTheme={uiTheme} setUiTheme={setUiTheme} />
       ) : (
         <div className="min-h-screen bg-slate-50 dark:bg-[#212121] text-slate-800 dark:text-[#e0e0e0] font-sans overflow-hidden flex flex-col md:flex-row transition-colors duration-300">
 
@@ -526,7 +526,7 @@ const App = () => {
             {/* Header */}
             <div className="p-5 border-b border-slate-100 dark:border-[#424242] flex items-center justify-between bg-white dark:bg-[#2a2a2a] sticky top-0 z-20 transition-colors duration-300">
               <div className="flex items-center gap-2">
-                <img src="/logo-new.png" alt="Logo" className="h-8 w-auto object-contain" />
+                <img src={uiTheme === 'dark' || (uiTheme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches) ? "/logo-dark.png" : "/logo-new.png"} alt="Logo" className="h-8 w-auto object-contain" />
                 <span className="font-bold text-lg text-slate-900 dark:text-white tracking-[0.2em] uppercase">MarkFrame</span>
               </div>
               <div className="flex gap-2">
@@ -832,7 +832,7 @@ const App = () => {
                 style={{
                   width: '100%',
                   flexGrow: 1,
-                  fontFamily: font.name === 'Custom' && customFontName ? customFontName : font.name,
+                  fontFamily: font.name === 'Custom' && customFontName ? `"${customFontName.trim()}"` : font.name,
                   fontSize: `${fontSize}px`,
                   padding: `${padding}px`,
                   borderRadius: `${borderRadius}px`,

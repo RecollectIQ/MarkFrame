@@ -3,7 +3,9 @@ import Particles from "react-tsparticles";
 import { loadSlim } from "tsparticles-slim";
 import { Tilt } from 'react-tilt';
 
-const LandingPage = ({ onEnter }) => {
+import { Moon, Sun, Monitor } from 'lucide-react';
+
+const LandingPage = ({ onEnter, uiTheme, setUiTheme }) => {
     const particlesInit = useCallback(async engine => {
         await loadSlim(engine);
     }, []);
@@ -97,6 +99,16 @@ const LandingPage = ({ onEnter }) => {
                 className="absolute inset-0 z-0"
             />
 
+            <div className="absolute top-6 right-6 z-50">
+                <button
+                    onClick={() => setUiTheme(prev => prev === 'light' ? 'dark' : prev === 'dark' ? 'system' : 'light')}
+                    className="p-3 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-slate-700 dark:text-slate-200 hover:bg-white/20 transition-all shadow-lg"
+                    title={`Theme: ${uiTheme}`}
+                >
+                    {uiTheme === 'light' ? <Sun className="w-6 h-6" /> : uiTheme === 'dark' ? <Moon className="w-6 h-6" /> : <Monitor className="w-6 h-6" />}
+                </button>
+            </div>
+
             <div className="z-10 flex flex-col items-center gap-8">
                 <Tilt options={defaultOptions} className="cursor-pointer" >
                     <div onClick={onEnter} className="flex flex-col items-center">
@@ -108,7 +120,7 @@ const LandingPage = ({ onEnter }) => {
                                 maskSize: 'contain',
                                 maskRepeat: 'no-repeat',
                                 maskPosition: 'center',
-                                WebkitMaskImage: 'url(/logo-new.png)',
+                                WebkitMaskImage: uiTheme === 'dark' || (uiTheme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'url(/logo-dark.png)' : 'url(/logo-new.png)',
                                 WebkitMaskSize: 'contain',
                                 WebkitMaskRepeat: 'no-repeat',
                                 WebkitMaskPosition: 'center'
