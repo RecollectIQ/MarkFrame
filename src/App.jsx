@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef, useMemo, useLayoutEffect } from 're
 import {
   Download,
   Palette,
-  Sparkles,
   Image as ImageIcon,
   Copy,
   Check,
@@ -596,7 +595,7 @@ const App = () => {
                 <button
                   onClick={handleExport}
                   disabled={isExporting || isCopying}
-                  className="bg-slate-900 hover:bg-slate-800 text-white p-2 rounded-lg transition-all shadow-md active:scale-95 disabled:opacity-50 flex items-center gap-2"
+                  className="bg-slate-900 dark:bg-[#333] hover:bg-slate-800 dark:hover:bg-[#424242] text-white p-2 rounded-lg transition-all shadow-md active:scale-95 disabled:opacity-50 flex items-center gap-2"
                 >
                   {isExporting ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Download className="w-4 h-4" />}
                   <span className="text-xs font-bold hidden md:inline">Export</span>
